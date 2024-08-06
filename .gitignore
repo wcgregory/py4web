@@ -1,1 +1,6 @@
-
+.pyc
+__pycache__
+apps/*
+!apps/wcg
+apps/wcg/_scaffold
+password.txt
