@@ -1,6 +1,10 @@
 .pyc
 __pycache__
 apps/*
+databases/
+.db
+.sqlite
 !apps/wcg
 apps/wcg/_scaffold
 password.txt
+.service/
