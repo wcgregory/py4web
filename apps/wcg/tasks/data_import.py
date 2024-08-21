@@ -2,7 +2,7 @@
 Basic data importer
 """
 
-people_dict = [
+people = [
     {
         "tablename": "person",
         "firstname": "Sam",
