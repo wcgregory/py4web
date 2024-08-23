@@ -2,66 +2,63 @@
 This file defines the database models
 """
 
+from datetime import datetime
+
 from .common import db, Field
 from pydal.validators import *
 
-### Define your table below
-#
-# db.define_table('thing', Field('name'))
-#
-## always commit your models to avoid problems later
-#
-# db.commit()
-#
+VENDORS = ('Arista', 'Cisco', 'Juniper')
+DEVICE_FUNCTIONS = ('Firewall', 'Router', 'Switch')
+DEVICE_ROLES = ('CORE', 'GWAN', 'INTERNET', 'EXTRANET', 'OTHER')
 
-MANUFACTURER = ('Arista', 'Cisco', 'Juniper')
-DEVICE_TYPE = ('Firewall', 'Router', 'Switch')
-DEVICE_ROLE = ('DC-CORE', 'GWAN', 'INTERNET', 'EXTRANET', 'OTHER')
+REGIONS = ('APAC', 'SWIS', 'EMEA', 'AMER')
+SITE_CODES = ('HACL', 'LO2X', 'LD2B', 'LODT')
 
-REGION = ('APAC', 'SWIS', 'EMEA', 'AMER')
-SITE = ('HACL', 'LO2X', 'LD2B', 'LODT')
+COMMAND_STATUSES = ('Success', 'Pending', 'Running', 'Failed')
 
-if 'device' in db.tables:
-    db.device.drop()
-if 'device-role' in db.tables:
-    db.device_role.drop()
+# Set development to True to repopulate DB
+DEVELOPMENT = True
 
-db.define_table(
-    'device',
-    Field('name', length=24, required=True, notnull=True, unique=True),
-    Field('mgmt_ip', length=15, unique=True),
-    Field('make', required=True, requires=IS_IN_SET(MANUFACTURER)),
-    Field('function', required=True, requires=IS_IN_SET(DEVICE_TYPE)),
-    Field('region', required=True, requires=IS_IN_SET(REGION)),
-    Field('site', required=True, requires=IS_IN_SET(SITE)),
-    format='%(name)s'
-)
+if DEVELOPMENT:
+    if 'commands' in db.tables:
+        db.commands.drop()
+    if 'devices' in db.tables:
+        db.devices.drop()
+    if 'results' in db.tables:
+        db.results.drop()
 
 db.define_table(
-    'device_role',
-    Field('device_id', 'reference device'),
-    Field('role', required=True, requires=IS_IN_SET(DEVICE_ROLE)),
-    format='%(role)s %(device_id)s'
-)
-
-db.define_table(
-    'command',
-    Field('syntax', required=True, notnull=True, unique=True),
-    Field('make', required=True, requires=IS_IN_SET(MANUFACTURER)),
+    'commands',
+    Field('syntax', 'string', notnull=True),
+    Field('vendors', 'list:string', requires=IS_IN_SET(VENDORS), notnull=True),
+    Field('device_functions', 'list:string', requires=IS_IN_SET(DEVICE_FUNCTIONS), notnull=True),
+    Field('device_roles', 'list:string', requires=IS_IN_SET(DEVICE_ROLES)),
     format='%(syntax)s'
 )
 
 db.define_table(
-    'compatible_command',
-    Field('command_id', 'reference device'),
-    Field('function', required=True, requires=IS_IN_SET(DEVICE_TYPE)),
-    format='%(function)s'
+    'devices',
+    Field('name', 'string', length=24, notnull=True, unique=True),
+    Field('mgmt_ip', 'string', length=15, unique=True),
+    Field('vendor', 'string', requires=IS_IN_SET(VENDORS), notnull=True),
+    Field('device_function', 'string', requires=IS_IN_SET(DEVICE_FUNCTIONS), notnull=True),
+    Field('device_roles', 'list:string', requires=IS_IN_SET(DEVICE_ROLES), notnull=True),
+    Field('commands', 'list:reference commands'),
+    Field('region', 'string', requires=IS_IN_SET(REGIONS), notnull=True),
+    Field('site', 'string', requires=IS_IN_SET(SITE_CODES), notnull=True),
+    format='%(name)s %(mgmt_ip)s'
 )
 
 db.define_table(
-    'command_list',
-    Field('name', length=96, required=True, notnull=True, unique=True),
-    Field('command_id', 'reference device'),
-    Field('role', required=True, requires=IS_IN_SET(DEVICE_ROLE)),
-    format='%(name)s %(role)s'
+    'results',
+    Field('device', 'reference devices'),
+    Field('command', 'reference commands'),
+    Field('completed_at', 'datetime'),
+    Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES), notnull=True),
+    Field('last_run_at', 'datetime'),
+    Field('Last_status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),
+    Field('result', 'text'),
+    Field('last_result', 'text'),
 )
+
+db.commit()
