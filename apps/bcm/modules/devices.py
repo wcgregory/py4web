@@ -26,14 +26,15 @@ class DBDevices(BCMDb):
         self.created_at = None
         if self.db_id:
             self.load_by_id()
+        #self._dbtable = 'devices'
     
     def load_by_id(self, db_rec=None, db_id=None):
         """
-        Method to load a device object from the DB using the DB id
+        Method to load a device object from the DB table using the DB id
         ---
         :param db_rec: a valid device DB record
         :type db_rec: pyDAL object
-        :param db_id:
+        :param db_id: a valid device DB id
         :type db_id: int
         """
         if db_rec is None:
@@ -57,6 +58,57 @@ class DBDevices(BCMDb):
         self.site_code = db_rec.site_code
         self.created_at = db_rec.created_at
         self.db_loaded = True
+    
+    def set_db_record(self):
+        """
+        Class to DB record creator
+        Must set the class db_id to the new DB id
+        """
+        if self.db_id:
+            raise ValueError("Device already has database id or record")
+        # check for duplicates in unique fields
+        query = db.devices.name == self.name
+        query |= db.devices.mgmt_ip == self.mgmt_ip
+        db_dup_check = db(query).select()
+        if len(db_dup_check) > 0:
+            raise ValueError("Duplicate name or mgmt_ip in devices table")
+        db.devices.insert(
+            name=self.name, mgmt_ip=self.mgmt_ip, vendor=self.vendor,
+            device_function=self.device_function, device_roles=self.device_roles,
+            commands=self.commands, region=self.region, site_code=self.site_code
+        )
+        
+        db_rec = db(query).select().first()
+        if db_rec:
+            self.db_id = db_rec.id
+            self.db_create = True
+            db.commit()
+            logging.warning(f"Record created in table 'devices' with id:{self.db_id}")
+        else:
+            db.rollback()
+    
+    def from_json(self, json_data):
+        """
+        Method to load a device object from a json data set.
+        Must not set the DB id (db_id), if successful set self.json_import to True
+        """
+        if 'name' in json_data.keys():
+            self.name = json_data['name']
+        if 'mgmt_ip' in json_data.keys():
+            self.mgmt_ip = json_data['mgmt_ip']
+        if 'vendor' in json_data.keys():
+            self.vendor = json_data['vendor']
+        if 'device_function' in json_data.keys():
+            self.device_function = json_data['device_function']
+        if 'device_roles' in json_data.keys():
+            self.device_roles = json_data['device_roles']
+        if 'commands' in json_data.keys():
+            self.commands = json_data['commands']
+        if 'region' in json_data.keys():
+            self.region = json_data['region']
+        if 'site_code' in json_data.keys():
+            self.site_code = json_data['site_code']
+        self.json_import = True
     
     def to_json(self):
         """

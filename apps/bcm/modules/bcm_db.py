@@ -8,6 +8,7 @@ class BCMDb(object):
     def __init__(self, db_id=None):
         self.db_id = db_id
         self.db_loaded = False
+        self.db_create = False
         self.json_import = False
     
     def get_id(self):
@@ -25,7 +26,7 @@ class BCMDb(object):
     
     def load_by_id(self, db_rec=None, db_id=None):
         """
-        Class loader.
+        Class loader from DB Tables.
         Populates the attributes of the class from the db, by record data or by id.
         If successful switch value of self.db_loaded to True
         """
@@ -44,5 +45,12 @@ class BCMDb(object):
         Returns class attributes in dict format.
         ---
         :return: class attributes as dict
+        """
+        raise NotImplemented()
+    
+    def set_db_record(self):
+        """
+        Class to DB record creator
+        Must set the class db_id to the new DB id
         """
         raise NotImplemented()
