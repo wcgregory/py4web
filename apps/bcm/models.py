@@ -33,6 +33,7 @@ db.define_table(
     Field('vendors', 'list:string', requires=IS_IN_SET(VENDORS), notnull=True),
     Field('device_functions', 'list:string', requires=IS_IN_SET(DEVICE_FUNCTIONS), notnull=True),
     Field('device_roles', 'list:string', requires=IS_IN_SET(DEVICE_ROLES)),
+    Field('created_at', 'datetime', update=datetime.now()),
     format='%(syntax)s'
 )
 
@@ -45,15 +46,16 @@ db.define_table(
     Field('device_roles', 'list:string', requires=IS_IN_SET(DEVICE_ROLES), notnull=True),
     Field('commands', 'list:reference commands'),
     Field('region', 'string', requires=IS_IN_SET(REGIONS), notnull=True),
-    Field('site', 'string', requires=IS_IN_SET(SITE_CODES), notnull=True),
+    Field('site_code', 'string', requires=IS_IN_SET(SITE_CODES), notnull=True),
+    Field('created_at', 'datetime', update=datetime.now()),
     format='%(name)s %(mgmt_ip)s'
 )
 
 db.define_table(
     'results',
-    Field('device', 'reference devices'),
-    Field('command', 'reference commands'),
-    Field('completed_at', 'datetime'),
+    Field('device', 'reference devices', notnull=True),
+    Field('command', 'reference commands', notnull=True),
+    Field('completed_at', 'datetime', notnull=True),
     Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES), notnull=True),
     Field('last_run_at', 'datetime'),
     Field('Last_status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),
