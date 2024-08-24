@@ -8,26 +8,41 @@ class BCMDb(object):
     def __init__(self, db_id=None):
         self.db_id = db_id
         self.db_loaded = False
+        self.json_import = False
     
     def get_id(self):
+        """Return the class DB id"""
         return self.db_id
     
     def validate(self):
         """
+        Check the validity of the class.
+        Raise DataValidationError if validation fails, otherwise return nothing or true.
+        ---
+        return: Nothing or True
         """
         raise NotImplemented()
     
     def load_by_id(self, db_rec=None, db_id=None):
         """
+        Class loader.
+        Populates the attributes of the class from the db, by record data or by id.
+        If successful switch value of self.db_loaded to True
         """
         raise NotImplemented()
     
     def from_json(self, json_data):
         """
+        Class import loader.
+        Import data and populate the class attributes, must not set the DB id (db_id)
+        If successful switch value of self.json_import to True
         """
         raise NotImplemented()
 
     def to_json(self):
         """
+        Returns class attributes in dict format.
+        ---
+        :return: class attributes as dict
         """
         raise NotImplemented()
