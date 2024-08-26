@@ -14,7 +14,7 @@ class DBDevices(BCMDb):
         """
         Standard constructor class
         """
-        super().__init__(db_id)
+        super(DBDevices, self).__init__(db_id=db_id)
         self.name = name
         self.mgmt_ip = mgmt_ip
         self.vendor = None
@@ -33,7 +33,7 @@ class DBDevices(BCMDb):
         Method to load a device object from the DB table using the DB id
         ---
         :param db_rec: a valid device DB record
-        :type db_rec: pyDAL object
+        :type db_rec: pydal.objects.Row
         :param db_id: a valid device DB id
         :type db_id: int
         """
@@ -66,18 +66,19 @@ class DBDevices(BCMDb):
         """
         if self.db_id:
             raise ValueError("Device already has database id or record")
-        # check for duplicates in unique fields
+        # create query to check for duplicates of unique fields
         query = db.devices.name == self.name
         query |= db.devices.mgmt_ip == self.mgmt_ip
         db_dup_check = db(query).select()
         if len(db_dup_check) > 0:
-            raise ValueError("Duplicate name or mgmt_ip in devices table")
-        db.devices.insert(
+            rec_id = db_dup_check.first()
+            logging.warning(f"Duplicate entry in table 'devices' with id:{rec_id.id}")
+            return None
+        db.devices.update_or_insert(query,
             name=self.name, mgmt_ip=self.mgmt_ip, vendor=self.vendor,
             device_function=self.device_function, device_roles=self.device_roles,
             commands=self.commands, region=self.region, site_code=self.site_code
         )
-        
         db_rec = db(query).select().first()
         if db_rec:
             self.db_id = db_rec.id
@@ -97,17 +98,17 @@ class DBDevices(BCMDb):
         if 'mgmt_ip' in json_data.keys():
             self.mgmt_ip = json_data['mgmt_ip']
         if 'vendor' in json_data.keys():
-            self.vendor = json_data['vendor']
+            self.vendor = json_data['vendor'].capitalize()
         if 'device_function' in json_data.keys():
-            self.device_function = json_data['device_function']
+            self.device_function = json_data['device_function'].capitalize()
         if 'device_roles' in json_data.keys():
-            self.device_roles = json_data['device_roles']
+            self.device_roles = json_data['device_roles'].upper()
         if 'commands' in json_data.keys():
             self.commands = json_data['commands']
         if 'region' in json_data.keys():
-            self.region = json_data['region']
+            self.region = json_data['region'].upper()
         if 'site_code' in json_data.keys():
-            self.site_code = json_data['site_code']
+            self.site_code = json_data['site_code'].upper()
         self.json_import = True
     
     def to_json(self):

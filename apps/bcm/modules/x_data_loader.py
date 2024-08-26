@@ -5,6 +5,7 @@ import logging
 # from .bcm_db import BCMDb
 from ..models import db
 from .devices import DBDevices
+from .commands import DBCommands
 
 
 DEVICES = [
@@ -17,13 +18,38 @@ DEVICES = [
         "commands": [],
         "region": "EMEA",
         "site_code": "HACL"
+    },
+    {
+        "name": "rtra-dumy-0002",
+        "mgmt_ip": "123.123.123.2",
+        "vendor": "Arista",
+        "device_function": "Router",
+        "device_roles": "CORE",
+        "commands": [],
+        "region": "EMEA",
+        "site_code": "HACL"
+    }
+]
+
+COMMANDS = [
+    {
+        "syntax": "show version",
+        "vendors": ['Arista', 'Cisco', 'Juniper'],
+        "device_functions": ['Firewall', 'Switch', 'Router'],
+        "device_roles": ['CORE'],
     }
 ]
 
 for device in DEVICES:
     record = DBDevices()
     record.from_json(device)
-    if not record.db_create:
+    if not record.db_loaded or not record.db_create:
+        record.set_db_record()
+
+for command in COMMANDS:
+    record = DBCommands()
+    record.from_json(command)
+    if not record.db_loaded or not record.db_create:
         record.set_db_record()
 
 """

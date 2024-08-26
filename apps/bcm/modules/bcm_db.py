@@ -51,6 +51,6 @@ class BCMDb(object):
     def set_db_record(self):
         """
         Class to DB record creator
-        Must set the class db_id to the new DB id
+        Must not have or use a class db_id, a DB id will be created
         """
         raise NotImplemented()
