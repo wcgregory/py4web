@@ -14,7 +14,7 @@ DEVICES = [
         "mgmt_ip": "123.123.123.1",
         "vendor": "Arista",
         "device_function": "Router",
-        "device_roles": "CORE",
+        "device_roles": ["CORE"],
         "commands": [],
         "region": "EMEA",
         "site_code": "HACL"
@@ -24,7 +24,7 @@ DEVICES = [
         "mgmt_ip": "123.123.123.2",
         "vendor": "Arista",
         "device_function": "Router",
-        "device_roles": "CORE",
+        "device_roles": ['CORE'],
         "commands": [],
         "region": "EMEA",
         "site_code": "HACL"
@@ -36,21 +36,22 @@ COMMANDS = [
         "syntax": "show version",
         "vendors": ['Arista', 'Cisco', 'Juniper'],
         "device_functions": ['Firewall', 'Switch', 'Router'],
-        "device_roles": ['CORE'],
+        "device_roles": ['CORE', 'GWAN']
     }
 ]
 
 for device in DEVICES:
     record = DBDevices()
     record.from_json(device)
-    if not record.db_loaded or not record.db_create:
-        record.set_db_record()
+    record.set_db_record()
 
 for command in COMMANDS:
     record = DBCommands()
     record.from_json(command)
-    if not record.db_loaded or not record.db_create:
-        record.set_db_record()
+    record.set_db_record()
+
+#remove_command = DBCommands(2)
+#remove_command.delete()
 
 """
 db.define_table(

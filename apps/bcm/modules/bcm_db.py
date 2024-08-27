@@ -1,5 +1,6 @@
 # coding: utf-8 #
 
+from datetime import datetime
 
 class BCMDb(object):
     """
@@ -14,6 +15,10 @@ class BCMDb(object):
     def get_id(self):
         """Return the class DB id"""
         return self.db_id
+    
+    @staticmethod
+    def get_timestamp():
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     def validate(self):
         """
@@ -52,5 +57,7 @@ class BCMDb(object):
         """
         Class to DB record creator
         Must not have or use a class db_id, a DB id will be created
+        ---
+        :return True or False: based on whether a new record is created or not
         """
         raise NotImplemented()

@@ -1,6 +1,7 @@
 # coding: utf-8 #
 
 import logging
+from datetime import datetime
 
 from .bcm_db import BCMDb
 from ..models import db
@@ -21,6 +22,7 @@ class DBCommands(BCMDb):
         self.device_functions = list()
         self.device_roles = list()
         self.created_at = None
+        self.modified_on = None
         if self.db_id:
             self.load_by_id()
     
@@ -49,52 +51,92 @@ class DBCommands(BCMDb):
         self.device_functions = db_rec.device_functions
         self.device_roles = db_rec.device_roles
         self.created_at = db_rec.created_at
+        self.modified_on = db_rec.modified_on
         self.db_loaded = True
     
     def set_db_record(self):
         """
         Class to DB record creator
         Must set the class db_id to the new DB id
+        ---
+        :return True or False: based on whether a new record is created or not
         """
         if self.db_id:
-            raise ValueError("Device already has database id or record")
-        # create query to check for linked fields
-        query = db.commands.syntax == self.syntax
-        query &= db.commands.vendors == self.vendors
-        query &= db.commands.device_functions == self.device_functions
-        if self.device_roles:
-            query &= db.commands.device_roles.contains(self.device_roles, all=True)
-        db_dup_check = db(query).select()
-        if len(db_dup_check) > 0:
-            rec_id = db_dup_check.first()
-            logging.warning(f"Record already exists in table 'commands' with id:{rec_id.id}")
-            return None
-        db.commands.update_or_insert(query,
-            syntax=self.syntax, vendors=self.vendors,
-            device_functions=self.device_functions, device_roles=self.device_roles,
-        )
-        db_rec = db(query).select().first()
-        if db_rec:
-            self.db_id = db_rec.id
-            self.db_create = True
+            raise ValueError("Command already has database id or record")
+        # create query to check record's key fields, starting with syntax
+        query = (db.commands.syntax == self.syntax)
+        self.created_at = DBCommands.get_timestamp()
+        self.modified_on = self.created_at
+        if db(query).count() == 0:  # no existing db record matching 'syntax'
+            db.commands.insert(syntax=self.syntax, vendors=self.vendors,
+                device_functions=self.device_functions, device_roles=self.device_roles,
+                created_at=self.created_at, modified_on=self.modified_on)
             db.commit()
-            logging.warning(f"Record created in table 'commands' with id:{self.db_id}")
-        else:
-            db.rollback()
+            db_rec = db(query).select().first()  # use created record
+            if db_rec:
+                self.db_id = db_rec.id
+                self.db_create = True
+                logging.warning(f"New record created in table 'commands' id={self.db_id}")
+            return True
+        # existing db record matching 'syntax'
+        db_rec = db(query).select().first()
+        self.db_id = db_rec.id      
+        # create specific query using DB id, with key field 'vendors'
+        query = (db.commands.id == self.db_id) & (db.commands.vendors.contains(self.vendors, all=True))
+        if db(query).count() == 0:
+            vendor_updates = db_rec.vendors
+            vendor_updates.extend([
+                vu.strip().capitalize() for vu in self.vendors if not vu.strip().capitalize() in db_rec.vendors
+            ])
+            self.modified_on = DBCommands.get_timestamp()
+            db_rec.update_record(vendors=sorted(vendor_updates), modified_on=self.modified_on)
+            db.commit()
+            logging.warning(f"Update record id={self.db_id} field='vendors' in table 'commands'")
+            return True
+        # add to query pair 'syntax'|'vendor' with key field 'device_functions'
+        query &= (db.commands.device_functions.contains(self.device_functions, all=True))
+        if db(query).count() == 0:
+            function_updates = db_rec.device_functions
+            function_updates.extend([
+                fu.strip().upper() for fu in self.function_updates if not
+                    fu.strip().upper() in db_rec.device_functions
+            ])
+            self.modified_on = DBCommands.get_timestamp()
+            db_rec.update_record(device_functions=sorted(function_updates), modified_on=self.modified_on)
+            db.commit()
+            logging.warning(f"Update record id={self.db_id} field='device_functions' in table 'commands'")
+            return True
+        # restart with specific query using DB id, with key field 'vendors', adding 'device_roles'
+        query = (db.commands.id == self.db_id) & (db.commands.vendors.contains(self.vendors, all=True))
+        query &= (db.commands.device_roles.contains(self.device_roles, all=True))
+        if db(query).count() == 0:
+            role_updates = db_rec.device_roles
+            role_updates.extend([
+                ru.strip().upper() for ru in self.device_roles if not
+                    ru.strip().upper() in db_rec.device_roles
+            ])
+            self.modified_on = DBCommands.get_timestamp()
+            db_rec.update_record(device_roles=sorted(role_updates), modified_on=self.modified_on)
+            db.commit()
+            logging.warning(f"Update record id={self.db_id} field='device_roles' in table 'commands'")
+            return True
+        logging.warning(f"No updates to make on id={self.db_id} in table 'commands'")
+        db.rollback()
+        return False
     
     def from_json(self, json_data):
         """
         Method to load a device object from a json data set.
         Must not set the DB id (db_id), if successful set self.json_import to True
         """
-        if 'syntax' in json_data.keys():
-            self.syntax = json_data['syntax']
-        if 'vendors' in json_data.keys():
-            self.vendors = json_data['vendors']
-        if 'device_functions' in json_data.keys():
-            self.device_functions = json_data['device_functions']
-        if 'device_roles' in json_data.keys():
-            self.device_roles = json_data['device_roles']
+        if 'syntax' in json_data.keys() and json_data['syntax']:
+            self.syntax = json_data['syntax'].strip()
+        if 'vendors' in json_data.keys() and json_data['vendors']:
+            self.vendors = [v.strip().capitalize() for v in json_data['vendors']]
+        if 'device_functions' in json_data.keys() and json_data['device_functions']:
+            self.device_functions = [df.strip().capitalize() for df in json_data['device_functions']]
+        if 'device_roles' in json_data.keys() and json_data['device_roles']:
+            self.device_roles = [entry.strip().upper() for entry in json_data['device_roles']]
         self.json_import = True
     
     def to_json(self):
@@ -105,4 +147,4 @@ class DBCommands(BCMDb):
         """
         return dict(id=self.db_id, syntax=self.syntax, vendors=self.vendors,
             device_functions=self.device_functions, device_roles=self.device_roles,
-            created_at=self.created_at)
+            created_at=self.created_at, modified_on=self.modified_on)

@@ -33,7 +33,8 @@ db.define_table(
     Field('vendors', 'list:string', requires=IS_IN_SET(VENDORS), notnull=True),
     Field('device_functions', 'list:string', requires=IS_IN_SET(DEVICE_FUNCTIONS), notnull=True),
     Field('device_roles', 'list:string', requires=IS_IN_SET(DEVICE_ROLES)),
-    Field('created_at', 'datetime', update=datetime.now()),
+    Field('created_at', 'datetime', notnull=True),
+    Field('modified_on', 'datetime'),
     format='%(syntax)s'
 )
 
@@ -47,7 +48,8 @@ db.define_table(
     Field('commands', 'list:reference commands'),
     Field('region', 'string', requires=IS_IN_SET(REGIONS), notnull=True),
     Field('site_code', 'string', requires=IS_IN_SET(SITE_CODES), notnull=True),
-    Field('created_at', 'datetime', update=datetime.now()),
+    Field('created_at', 'datetime', notnull=True),
+    Field('modified_on', 'datetime'),
     format='%(name)s %(mgmt_ip)s'
 )
 
@@ -58,7 +60,7 @@ db.define_table(
     Field('completed_at', 'datetime', notnull=True),
     Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES), notnull=True),
     Field('last_run_at', 'datetime'),
-    Field('Last_status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),
+    Field('last_status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),
     Field('result', 'text'),
     Field('last_result', 'text'),
 )
