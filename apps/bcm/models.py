@@ -19,13 +19,18 @@ COMMAND_STATUSES = ('Success', 'Pending', 'Running', 'Failed')
 # Set development to True to repopulate DB
 DEVELOPMENT = True
 
+"""
 if DEVELOPMENT:
     if 'commands' in db.tables:
+        db.commands.truncate()
         db.commands.drop()
     if 'devices' in db.tables:
+        db.devices.truncate()
         db.devices.drop()
     if 'results' in db.tables:
+        db.results.truncate()
         db.results.drop()
+"""
 
 db.define_table(
     'commands',
@@ -59,10 +64,12 @@ db.define_table(
     Field('command', 'reference commands', notnull=True),
     Field('completed_at', 'datetime', notnull=True),
     Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES), notnull=True),
-    Field('last_run_at', 'datetime'),
-    Field('last_status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),
     Field('result', 'text'),
-    Field('last_result', 'text'),
+    Field('last_result', 'reference results')
+    #Field('last_result', 'reference results', requires=IS_IN_DB(db, results.id))
+    #Field('last_run_at', 'datetime'),
+    #Field('last_status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),
+    #Field('last_result', 'text'),
 )
 
 db.commit()

@@ -1,13 +1,12 @@
 # coding: utf-8 #
 
 import logging
-from datetime import datetime
 
 from .bcm_db import BCMDb
 from ..models import db
 
 
-class DBCommands(BCMDb):
+class DBCommand(BCMDb):
     """
     DB Abstraction class for uniform interaction with DB Table 'commands'
     """
@@ -15,7 +14,7 @@ class DBCommands(BCMDb):
         """
         Standard constructor class
         """
-        super(DBCommands, self).__init__(db_id=db_id)
+        super(DBCommand, self).__init__(db_id=db_id)
         #self._dbtable = 'commands' -> db.tables == 'commands'
         self.syntax = syntax
         self.vendors = list()
@@ -54,7 +53,7 @@ class DBCommands(BCMDb):
         self.modified_on = db_rec.modified_on
         self.db_loaded = True
     
-    def set_db_record(self):
+    def save(self):
         """
         Class to DB record creator
         Must set the class db_id to the new DB id
@@ -65,7 +64,7 @@ class DBCommands(BCMDb):
             raise ValueError("Command already has database id or record")
         # create query to check record's key fields, starting with syntax
         query = (db.commands.syntax == self.syntax)
-        self.created_at = DBCommands.get_timestamp()
+        self.created_at = DBCommand.get_timestamp()
         self.modified_on = self.created_at
         if db(query).count() == 0:  # no existing db record matching 'syntax'
             db.commands.insert(syntax=self.syntax, vendors=self.vendors,
@@ -88,7 +87,7 @@ class DBCommands(BCMDb):
             vendor_updates.extend([
                 vu.strip().capitalize() for vu in self.vendors if not vu.strip().capitalize() in db_rec.vendors
             ])
-            self.modified_on = DBCommands.get_timestamp()
+            self.modified_on = DBCommand.get_timestamp()
             db_rec.update_record(vendors=sorted(vendor_updates), modified_on=self.modified_on)
             db.commit()
             logging.warning(f"Update record id={self.db_id} field='vendors' in table 'commands'")
@@ -101,7 +100,7 @@ class DBCommands(BCMDb):
                 fu.strip().upper() for fu in self.function_updates if not
                     fu.strip().upper() in db_rec.device_functions
             ])
-            self.modified_on = DBCommands.get_timestamp()
+            self.modified_on = DBCommand.get_timestamp()
             db_rec.update_record(device_functions=sorted(function_updates), modified_on=self.modified_on)
             db.commit()
             logging.warning(f"Update record id={self.db_id} field='device_functions' in table 'commands'")
@@ -115,7 +114,7 @@ class DBCommands(BCMDb):
                 ru.strip().upper() for ru in self.device_roles if not
                     ru.strip().upper() in db_rec.device_roles
             ])
-            self.modified_on = DBCommands.get_timestamp()
+            self.modified_on = DBCommand.get_timestamp()
             db_rec.update_record(device_roles=sorted(role_updates), modified_on=self.modified_on)
             db.commit()
             logging.warning(f"Update record id={self.db_id} field='device_roles' in table 'commands'")

@@ -1,13 +1,14 @@
 # coding: utf-8 #
 
 import logging
-from datetime import datetime
+
+from pydal.objects import Row
 
 from .bcm_db import BCMDb
 from ..models import db
 
 
-class DBDevices(BCMDb):
+class DBDevice(BCMDb):
     """
     DB Abstraction class for uniform interaction with DB Table 'devices'
     """
@@ -15,7 +16,7 @@ class DBDevices(BCMDb):
         """
         Standard constructor class
         """
-        super(DBDevices, self).__init__(db_id=db_id)
+        super(DBDevice, self).__init__(db_id=db_id)
         #self._dbtable = 'devices' -> db.table == 'devices'
         self.name = name
         self.mgmt_ip = mgmt_ip
@@ -62,51 +63,101 @@ class DBDevices(BCMDb):
         self.modified_on = db_rec.modified_on
         self.db_loaded = True
     
-    def set_db_record(self):
+    def save(self):
         """
-        Class to DB record creator
+        Save a record to DB creator/updater
         Must set the class db_id to the new DB id
         ---
         :return True or False: based on whether a new record is created or not
         """
-        if self.get_id() or self.db_id:
-            raise ValueError("Device already has database id or record")
-        # create query to check for duplicates of unique fields
+        # create query to check whether record already exists 'name & mgmt_ip'
         query = (db.devices.name == self.name) & (db.devices.mgmt_ip == self.mgmt_ip)
-        if db(query).count() > 0:
-            logging.warning(f"Duplicate exists in 'devices' for {self.name} and {self.mgmt_ip}")
-            return False
-        self.created_at = DBDevices.get_timestamp()
-        self.modified_on = self.created_at
-        db.devices.insert(name=self.name, mgmt_ip=self.mgmt_ip, vendor=self.vendor,
-            device_function=self.device_function, device_roles=self.device_roles,
-            commands=self.commands, region=self.region, site_code=self.site_code,
-            created_at=self.created_at, modified_on=self.modified_on)
-        db.commit()
-        db_rec = db(query).select().first()
-        if db_rec:
+        if db(query).count() == 0:
+            # create query to check for duplicates of unique fields before save
+            is_unique = db(db.devices.name == self.name) | (db.devices.mgmt_ip == self.mgmt_ip)
+            if db(is_unique).count() > 0:
+                logging.warning(f"Duplicate value in 'devices' either {self.name} or {self.mgmt_ip}")
+                return False
+            self.created_at = DBDevice.get_timestamp()
+            self.modified_on = self.created_at
+            db.devices.insert(name=self.name, mgmt_ip=self.mgmt_ip, vendor=self.vendor,
+                device_function=self.device_function, device_roles=self.device_roles,
+                commands=self.commands, region=self.region, site_code=self.site_code,
+                created_at=self.created_at, modified_on=self.modified_on)
+            db.commit()
+            db_rec = db(query).select().first()
+            if db_rec:
+                self.db_id = db_rec.id
+                self.db_created = True
+                logging.warning(f"New record created in table 'devices' id={self.db_id}")
+                return True
+        elif db(query).count() > 0:
+            db_rec = db(query).select().first()
             self.db_id = db_rec.id
-            self.db_create = True
-            logging.warning(f"Record created in table 'devices' with id={self.db_id}")
-            return True
-        db.rollback()
+            if not self.is_record_modified(db_id=db_rec.id):
+                logging.warning(f"No changes to save for id={self.db_id}")
+                return False
+            self.modified_on = DBDevice.get_timestamp()
+            db.devices.update_or_insert(query,
+                name=self.name, mgmt_ip=self.mgmt_ip, vendor=self.vendor,
+                device_function=self.device_function, device_roles=self.device_roles,
+                commands=self.commands, region=self.region, site_code=self.site_code,
+                modified_on=self.modified_on)
+            db.commit()
+            logging.warning(f"Updated record in table 'devices' with id={self.db_id}")
+            return False
+        # catch-all error
+        logging.warning("Unknown Error, more information/debugging required")
+        #db.rollback()
         return False
     
+    def is_record_modified(self, db_rec=None, db_id=None):
+        """
+        Method to detect whether the record has been modified
+        ---
+        :param db_rec: a valid device DB record
+        :type db_rec: pydal.objects.Row
+        :param db_id: a valid device DB id
+        :type db_id: int
+        """
+        if db_rec is None:
+            if db_id is None:
+                rec_id = self.get_id()
+            else:
+                rec_id = db_id
+            if not rec_id:
+                logging.error("Invalid or missing record id")
+                return False
+            db_rec = db(db.devices.id == rec_id).select().first()
+        elif db_rec and not isinstance(db_rec, Row):
+            raise TypeError(self.__class__.__name__, "Invalid type expecting"
+                            f"pydal.object.Row received type{db_rec}")
+        if not db_rec:
+            logging.error("Unable to retrieve record, database record missing or invalid id")
+            return False
+        if (
+            self.vendor != db_rec.vendor or
+            self.device_function != db_rec.device_function or
+            self.device_roles != db_rec.device_roles or
+            self.commands != db_rec.commands or
+            self.region != db_rec.region or
+            self.site_code != db_rec.site_code
+        ):
+            return True
+        # catch-all
+        return False
+
     def delete(self):
         """
-        Class to DB record destructor
+        Delete record destructor method
         Must have a db_id and common record fields
+        :return True or False: based on whether a new record is deleted or not
         """
         if not self.db_id:
             raise ValueError(self.__class__.__name__, "Not a valid record or id")
         if not db(db.devices.id == self.db_id).count() > 0:
             logging.warning(f"Unable to locate record with id={self.db_id} for deletion")
-            #logging.warning(f"Class to be removed {self.db_id}:{self.name}")
-            #super(self.__class__, self).delete()
-            self.db_id = None
-            self.db_loaded = False
-            self.db_create = False
-            return True
+            return False
         rec_id = db(db.devices.id == self.db_id).select().first()
         if (
             rec_id.name == self.name and
@@ -116,13 +167,13 @@ class DBDevices(BCMDb):
             db(db.devices.id == self.db_id).delete()
             db.commit()
             logging.warning(f"Record deleted in table 'devices' with id={self.db_id}")
-            #super(self.__class__, self).delete()
             self.db_id = None
             self.db_loaded = False
             self.db_create = False
             return True
+        # catch all error
+        logging.warning("Unknown error, more information/debugging required")
         return False
-
     
     def from_json(self, json_data):
         """

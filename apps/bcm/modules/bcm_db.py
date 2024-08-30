@@ -9,7 +9,7 @@ class BCMDb(object):
     def __init__(self, db_id=None):
         self.db_id = db_id
         self.db_loaded = False
-        self.db_create = False
+        self.db_created = False
         self.json_import = False
     
     def get_id(self):
