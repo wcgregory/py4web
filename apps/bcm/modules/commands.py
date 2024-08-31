@@ -2,6 +2,7 @@
 
 import logging
 
+from pydal.objects import Row
 from .bcm_db import BCMDb
 from ..models import db
 
@@ -41,9 +42,11 @@ class DBCommand(BCMDb):
                 rec_id = db_id
             if not rec_id:
                 logging.error("Invalid or missing record id")
+                return False
             db_rec = db(db.commands.id == rec_id).select().first()
         if not db_rec:
             logging.error("Unable to retrieve record, database record missing or invalid id")
+            return False
         self.db_id = db_rec.id
         self.syntax = db_rec.syntax
         self.vendors = db_rec.vendors
@@ -62,26 +65,28 @@ class DBCommand(BCMDb):
         """
         if self.db_id:
             raise ValueError("Command already has database id or record")
-        # create query to check record's key fields, starting with syntax
+        # create query to check record's key fields, starting with 'syntax'
         query = (db.commands.syntax == self.syntax)
-        self.created_at = DBCommand.get_timestamp()
-        self.modified_on = self.created_at
         if db(query).count() == 0:  # no existing db record matching 'syntax'
+            self.created_at = DBCommand.get_timestamp()
+            self.modified_on = self.created_at
             db.commands.insert(syntax=self.syntax, vendors=self.vendors,
                 device_functions=self.device_functions, device_roles=self.device_roles,
                 created_at=self.created_at, modified_on=self.modified_on)
             db.commit()
-            db_rec = db(query).select().first()  # use created record
+            db_rec = db(query).select().first()
             if db_rec:
                 self.db_id = db_rec.id
-                self.db_create = True
+                self.db_created = True
                 logging.warning(f"New record created in table 'commands' id={self.db_id}")
             return True
-        # existing db record matching 'syntax'
-        db_rec = db(query).select().first()
-        self.db_id = db_rec.id      
-        # create specific query using DB id, with key field 'vendors'
-        query = (db.commands.id == self.db_id) & (db.commands.vendors.contains(self.vendors, all=True))
+        elif db(query).count() > 0:  # existing db record matching 'syntax'
+            db_rec = db(query).select().first()
+            self.db_id = db_rec.id
+            vendor_updated = self.is_vendor_updated(db_id=self.db_id)
+            # create specific query using DB id, with key field 'vendors'
+            query = (db.commands.id == self.db_id)
+            query &= (db.commands.vendors.contains(self.vendors, all=True))
         if db(query).count() == 0:
             vendor_updates = db_rec.vendors
             vendor_updates.extend([
@@ -119,9 +124,37 @@ class DBCommand(BCMDb):
             db.commit()
             logging.warning(f"Update record id={self.db_id} field='device_roles' in table 'commands'")
             return True
-        logging.warning(f"No updates to make on id={self.db_id} in table 'commands'")
+        logging.warning(f"No updates to id={self.db_id} in table 'commands'")
         db.rollback()
         return False
+    
+    def is_vendor_updated(self, db_rec=None, db_id=None):
+        if db_rec is None:
+            if db_id is None:
+                rec_id = self.get_id()
+            else:
+                rec_id = db_id
+            if not rec_id:
+                logging.error("Invalid or missing record id")
+                return None
+            db_rec = db(db.commands.id == rec_id).select().first()
+            if not db_rec:
+                logging.error("Unable to retrieve record, database record missing or invalid id")
+                return None
+        #elif db_rec and isinstance(db_rec, Row):
+        #updated_vendors = list()
+        #else:
+        query = (db.commands.id == db_id) & (db.commands.vendors.contains(self.vendors, all=True))
+        if db(query).count() == 0:
+            return None
+        db_rec = db(query).select().first()
+        updated_vendors = db_rec.vendors
+        update = [
+            v.strip().capitalize() for v in self.vendors if not v.strip().capitalize() in db_rec.vendors
+        ]
+        if update:
+            return sorted(updated_vendors.extend(update))
+        return None
     
     def from_json(self, json_data):
         """

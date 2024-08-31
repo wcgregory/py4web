@@ -1,8 +1,5 @@
-from datetime import datetime
-from py4web import action
+# coding: utf-8
 
 from .models import db
 
-@action('index')
-def index():
-    return f"Hello World @ {datetime.now()}"
+from . import controllers
