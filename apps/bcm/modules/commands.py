@@ -173,6 +173,44 @@ class DBCommand(BCMDb):
             return None
         return sorted(update_to_roles)
     
+    def delete(self, db_rec=None, db_id=None):
+        """
+        Delete DB record - destructor method
+        If successful switch value of self.db_created and self.db_loaded to False
+        ---
+        :return True or False: based on whether record is deleted or not
+        """
+        if db_rec is None:
+            if db_id is None:
+                rec_id = self.get_id(default=db_id)
+            else:
+                rec_id = db_id
+            if not rec_id:
+                raise ValueError(self.__class__.__name__, "Invalid or missing record id")
+            db_rec = db(db.commands.id == rec_id).select().first()
+        if not db_rec or (db_rec and not isinstance(db_rec, Row)):
+            raise TypeError(self.__class__.__name__, f"Invalid type expecting Row received {type(db_rec)}")
+        if db(db.devices.commands.contains(db_rec.id)).count() > 0:
+            logging.warning(f"Unable to delete command id={db_rec.id} while used by device in 'devices'")
+            return False
+        if db(db.results.command.belongs(db(db.commands.id == db_rec.id).select())).count() > 0:
+            logging.warning(f"Unable to delete command id={db_rec.id} while in table 'results'")
+            return False
+        if (
+            db(db.devices.commands.contains(db_rec.id)).count() == 0 and
+            db(db.results.command.belongs(db(db.commands.id == db_rec.id).select())).count() == 0
+        ):
+            db(db.devices.id == db_rec.id).delete()
+            db.commit()
+            logging.warning(f"Record id={db_rec.id} deleted from table 'commands'")
+            self.db_id = None
+            self.db_loaded = False
+            self.db_created = False
+            return True
+        # catch all error
+        logging.warning("Unknown error, more information/debugging required")
+        return False
+
     def from_json(self, json_data):
         """
         Method to load a device object from a json data set.
@@ -185,7 +223,9 @@ class DBCommand(BCMDb):
         if 'device_functions' in json_data.keys() and json_data['device_functions']:
             self.device_functions = [df.strip().capitalize() for df in json_data['device_functions']]
         if 'device_roles' in json_data.keys() and json_data['device_roles']:
-            self.device_roles = [entry.strip().upper() for entry in json_data['device_roles']]
+            self.device_roles = [role.strip().upper() for role in json_data['device_roles']]
+        if 'comment' in json_data.keys() and json_data['comment']:
+            self.comment =  json_data['comment'].strip()
         self.json_import = True
     
     def to_json(self):
@@ -196,4 +236,4 @@ class DBCommand(BCMDb):
         """
         return dict(id=self.db_id, syntax=self.syntax, vendors=self.vendors,
             device_functions=self.device_functions, device_roles=self.device_roles,
-            created_at=self.created_at, modified_on=self.modified_on)
+            comment=self.comment, created_at=self.created_at, modified_on=self.modified_on)

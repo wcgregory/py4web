@@ -145,22 +145,25 @@ class DBDevice(BCMDb):
         # catch-all
         return False
 
-    def delete(self, db_id=None):
+    def delete(self, db_rec=None, db_id=None):
         """
         Delete DB record - destructor method
         If successful switch value of self.db_created and self.db_loaded to False
         ---
         :return True or False: based on whether record is deleted or not
         """
-        if db_id:
-            rec_id = self.get_id(default=db_id)
-        elif self.db_id:
-            rec_id = self.db_id
-        if not rec_id or not db(db.devices.id == rec_id).count() > 0:
-            logging.warning(f"Unable to find device id={self.db_id} in table 'devices'")
-            return False
-        if db(db.results.device.belongs(db(db.devices.id == rec_id).select())).count() == 0:
-            db(db.devices.id == rec_id).delete()
+        if db_rec is None:
+            if db_id is None:
+                rec_id = self.get_id(default=db_id)
+            else:
+                rec_id = db_id
+            if not rec_id:
+                raise ValueError(self.__class__.__name__, "Invalid or missing record id")
+            db_rec = db(db.devices.id == rec_id).select().first()
+        if not db_rec or (db_rec and not isinstance(db_rec, Row)):
+            raise TypeError(self.__class__.__name__, f"Invalid type expecting Row received {type(db_rec)}")
+        if db(db.results.device.belongs(db(db.devices.id == db_rec.id).select())).count() == 0:
+            db(db.devices.id == db_rec.id).delete()
             db.commit()
             logging.warning(f"Record deleted in table 'devices' with id={self.db_id}")
             self.db_id = None
