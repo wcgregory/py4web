@@ -59,7 +59,7 @@ class DBCommand(BCMDb):
     
     def save(self):
         """
-        Save a record to DB creator/updater
+        Save a record to DB - creator/updater method
         Must set the class db_id to the new DB id
         ---
         :return True or False: based on whether a new record is created or not
@@ -77,7 +77,7 @@ class DBCommand(BCMDb):
                 self.db_id = db_rec.id
                 self.db_created = True
                 logging.warning(f"New record created in table 'commands' id={self.db_id}")
-            return True
+                return True
         if db(query).count() > 0:  # no existing db record matching 'syntax'
             db_rec = db(query).select().first()
             self.db_id = db_rec.id

@@ -67,7 +67,7 @@ class DBDevice(BCMDb):
     
     def save(self):
         """
-        Save a record to DB creator/updater
+        Save a record to DB - creator/updater method
         Must set the class db_id to the new DB id
         ---
         :return True or False: based on whether a new record is created or not

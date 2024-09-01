@@ -1,9 +1,7 @@
 # coding: utf-8 #
 
-import logging
 from datetime import datetime
 
-from ..models import db
 from .devices import DBDevice
 from .commands import DBCommand
 from .results import DBResult
@@ -45,7 +43,36 @@ RESULTS = [
     {
         "device": 1,
         "command": 1,
-        "completed_at": DBResult.get_timestamp(),
+        "completed_at": '2024-09-01 14:28:32',
+        "status": "Success",
+        "result": "Sample data, for example, eos 4.30.5M",
+    },
+    {
+        "device": 2,
+        "command": 1,
+        #"completed_at": DBResult.get_timestamp(),
+        "completed_at": "2024-09-01 14:30:58",
+        "status": "Success",
+        "result": "Sample data, for example, eos 4.30.5M",
+    },
+    {
+        "device": 1,
+        "command": 1,
+        "completed_at": '2024-09-01 10:28:14',
+        "status": "Success",
+        "result": "Sample data, for example, eos 4.30.5M",
+    },
+    {
+        "device": 1,
+        "command": 1,
+        "completed_at": '2024-09-01 10:28:55',
+        "status": "Success",
+        "result": "Sample data, for example, eos 4.30.5M",
+    },
+    {
+        "device": 1,
+        "command": 1,
+        "completed_at": '2024-09-01 10:28:14',
         "status": "Success",
         "result": "Sample data, for example, eos 4.30.5M",
     }
@@ -61,7 +88,7 @@ for command in COMMANDS:
     record.from_json(command)
     record.save()
 
-#for result in RESULTS:
-#    record = DBResult()
-#    record.from_json(result)
-#    record.save()
+for result in RESULTS:
+    record = DBResult()
+    record.from_json(result)
+    record.save()

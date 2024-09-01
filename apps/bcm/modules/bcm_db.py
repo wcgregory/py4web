@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+
 class BCMDb(object):
     """
     Base DB Abstraction class for uniform interaction with DB Tables
