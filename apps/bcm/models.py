@@ -68,9 +68,8 @@ db.define_table(
     Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES), notnull=True),
     Field('result', 'text'),
     Field('last_result', 'reference results'),
-    # TODO: Field('comment', 'string')
-    # format='%(comment)s'
-    #
+    Field('comment', 'string'),
+    format='%(comment)s'
     #Field('last_result', 'reference results', requires=IS_IN_DB(db, results.id))
     #Field('last_run_at', 'datetime'),
     #Field('last_status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),
