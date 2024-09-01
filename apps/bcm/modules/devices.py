@@ -168,7 +168,7 @@ class DBDevice(BCMDb):
             logging.warning(f"Record deleted in table 'devices' with id={self.db_id}")
             self.db_id = None
             self.db_loaded = False
-            self.db_create = False
+            self.db_created = False
             return True
         if db(db.results.device.belongs(db(db.devices.id == rec_id).select())).count() > 0:
             logging.warning(f"unable to delete device id={self.db_id} & name={self.name} while in 'results' table")

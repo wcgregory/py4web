@@ -9,9 +9,11 @@ from netmiko import NetmikoTimeoutException
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from netmiko.ssh_dispatcher import ConnectHandler
 
+USER = 'myuser'
+PSWD = os.getenv('PSWD')
 
 
-class NetmikoConnect():
+class NetConnect():
     """
     Netmiko ConnectHandler wrapper class
     """
