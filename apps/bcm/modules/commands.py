@@ -46,7 +46,7 @@ class DBCommand(BCMDb):
                 raise ValueError(self.__class__.__name__, "Invalid or missing record id")
             db_rec = db(db.commands.id == rec_id).select().first()    
         if not db_rec:
-            raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")   
+            raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
         self.db_id = db_rec.id
         self.syntax = db_rec.syntax
         self.vendors = db_rec.vendors
