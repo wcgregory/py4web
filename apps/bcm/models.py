@@ -38,6 +38,7 @@ db.define_table(
     Field('vendors', 'list:string', requires=IS_IN_SET(VENDORS), notnull=True),
     Field('device_functions', 'list:string', requires=IS_IN_SET(DEVICE_FUNCTIONS), notnull=True),
     Field('device_roles', 'list:string', requires=IS_IN_SET(DEVICE_ROLES)),
+    Field('comment', 'string'),
     Field('created_at', 'datetime', notnull=True),
     Field('modified_on', 'datetime'),
     format='%(syntax)s'
@@ -66,7 +67,10 @@ db.define_table(
     Field('completed_at', 'datetime', notnull=True),
     Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES), notnull=True),
     Field('result', 'text'),
-    Field('last_result', 'reference results')
+    Field('last_result', 'reference results'),
+    # TODO: Field('comment', 'string')
+    # format='%(comment)s'
+    #
     #Field('last_result', 'reference results', requires=IS_IN_DB(db, results.id))
     #Field('last_run_at', 'datetime'),
     #Field('last_status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),

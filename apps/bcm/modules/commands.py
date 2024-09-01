@@ -3,6 +3,7 @@
 import logging
 
 from pydal.objects import Row
+
 from .bcm_db import BCMDb
 from ..models import db
 
@@ -11,7 +12,7 @@ class DBCommand(BCMDb):
     """
     DB Abstraction class for uniform interaction with DB Table 'commands'
     """
-    def __init__(self, db_id=None, syntax=None):
+    def __init__(self, db_id=None, syntax=None, comment=None):
         """
         Standard constructor class
         """
@@ -21,6 +22,7 @@ class DBCommand(BCMDb):
         self.vendors = list()
         self.device_functions = list()
         self.device_roles = list()
+        self.comment = None
         self.created_at = None
         self.modified_on = None
         if self.db_id:
@@ -28,11 +30,11 @@ class DBCommand(BCMDb):
     
     def load_by_id(self, db_rec=None, db_id=None):
         """
-        Method to load a device object from the DB table using the DB id
+        Method to load a command object from the DB table using the DB id
         ---
-        :param db_rec: a valid device DB record
-        :type db_rec: pydal.objects.Row
-        :param db_id: a valid device DB id
+        :param db_rec: a valid command DB record
+        :type db_rec: Row (pydal.objects.Row)
+        :param db_id: a valid command DB id
         :type db_id: int
         """
         if db_rec is None:
@@ -41,38 +43,34 @@ class DBCommand(BCMDb):
             else:
                 rec_id = db_id
             if not rec_id:
-                logging.error("Invalid or missing record id")
-                return False
-            db_rec = db(db.commands.id == rec_id).select().first()
+                raise ValueError(self.__class__.__name__, "Invalid or missing record id")
+            db_rec = db(db.commands.id == rec_id).select().first()    
         if not db_rec:
-            logging.error("Unable to retrieve record, database record missing or invalid id")
-            return False
+            raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")   
         self.db_id = db_rec.id
         self.syntax = db_rec.syntax
         self.vendors = db_rec.vendors
         self.device_functions = db_rec.device_functions
         self.device_roles = db_rec.device_roles
+        self.comment = db_rec.comment
         self.created_at = db_rec.created_at
         self.modified_on = db_rec.modified_on
         self.db_loaded = True
     
     def save(self):
         """
-        Class to DB record creator
+        Save a record to DB creator/updater
         Must set the class db_id to the new DB id
         ---
         :return True or False: based on whether a new record is created or not
         """
-        if self.db_id:
-            raise ValueError("Command already has database id or record")
-        # create query to check record's key fields, starting with 'syntax'
         query = (db.commands.syntax == self.syntax)
         if db(query).count() == 0:  # no existing db record matching 'syntax'
             self.created_at = DBCommand.get_timestamp()
             self.modified_on = self.created_at
             db.commands.insert(syntax=self.syntax, vendors=self.vendors,
                 device_functions=self.device_functions, device_roles=self.device_roles,
-                created_at=self.created_at, modified_on=self.modified_on)
+                comment=self.comment, created_at=self.created_at, modified_on=self.modified_on)
             db.commit()
             db_rec = db(query).select().first()
             if db_rec:
@@ -80,81 +78,100 @@ class DBCommand(BCMDb):
                 self.db_created = True
                 logging.warning(f"New record created in table 'commands' id={self.db_id}")
             return True
-        elif db(query).count() > 0:  # existing db record matching 'syntax'
+        if db(query).count() > 0:  # no existing db record matching 'syntax'
             db_rec = db(query).select().first()
             self.db_id = db_rec.id
-            vendor_updated = self.is_vendor_updated(db_id=self.db_id)
-            # create specific query using DB id, with key field 'vendors'
-            query = (db.commands.id == self.db_id)
-            query &= (db.commands.vendors.contains(self.vendors, all=True))
-        if db(query).count() == 0:
-            vendor_updates = db_rec.vendors
-            vendor_updates.extend([
-                vu.strip().capitalize() for vu in self.vendors if not vu.strip().capitalize() in db_rec.vendors
-            ])
+            vendor_updates = self.update_vendors(db_rec=db_rec)
+            function_updates = self.update_functions(db_rec=db_rec)
+            role_updates = self.update_roles(db_rec=db_rec)
+            if not vendor_updates and not function_updates and not role_updates:
+                logging.warning(f"No changes to save for id={self.db_id}")
+                return False
+            if vendor_updates:
+                self.vendors = vendor_updates
+            if function_updates:
+                self.device_functions = function_updates
+            if role_updates:
+                self.device_roles = role_updates
             self.modified_on = DBCommand.get_timestamp()
-            db_rec.update_record(vendors=sorted(vendor_updates), modified_on=self.modified_on)
+            db.commands.update_or_insert(query,
+                syntax=self.syntax, vendors=self.vendors, device_functions=self.device_functions,
+                device_roles=self.device_roles, comment=self.comment, modified_on=self.modified_on)
             db.commit()
-            logging.warning(f"Update record id={self.db_id} field='vendors' in table 'commands'")
+            logging.warning(f"Updated record in table 'commands' with id={self.db_id}")
             return True
-        # add to query pair 'syntax'|'vendor' with key field 'device_functions'
-        query &= (db.commands.device_functions.contains(self.device_functions, all=True))
-        if db(query).count() == 0:
-            function_updates = db_rec.device_functions
-            function_updates.extend([
-                fu.strip().upper() for fu in self.function_updates if not
-                    fu.strip().upper() in db_rec.device_functions
-            ])
-            self.modified_on = DBCommand.get_timestamp()
-            db_rec.update_record(device_functions=sorted(function_updates), modified_on=self.modified_on)
-            db.commit()
-            logging.warning(f"Update record id={self.db_id} field='device_functions' in table 'commands'")
-            return True
-        # restart with specific query using DB id, with key field 'vendors', adding 'device_roles'
-        query = (db.commands.id == self.db_id) & (db.commands.vendors.contains(self.vendors, all=True))
-        query &= (db.commands.device_roles.contains(self.device_roles, all=True))
-        if db(query).count() == 0:
-            role_updates = db_rec.device_roles
-            role_updates.extend([
-                ru.strip().upper() for ru in self.device_roles if not
-                    ru.strip().upper() in db_rec.device_roles
-            ])
-            self.modified_on = DBCommand.get_timestamp()
-            db_rec.update_record(device_roles=sorted(role_updates), modified_on=self.modified_on)
-            db.commit()
-            logging.warning(f"Update record id={self.db_id} field='device_roles' in table 'commands'")
-            return True
-        logging.warning(f"No updates to id={self.db_id} in table 'commands'")
+        # catch-all error
+        logging.warning("Unknown Error, more information/debugging required")
         db.rollback()
         return False
     
-    def is_vendor_updated(self, db_rec=None, db_id=None):
+    def update_vendors(self, db_rec=None, db_id=None):
         if db_rec is None:
             if db_id is None:
-                rec_id = self.get_id()
+                rec_id = self.get_id(default=db_id)
             else:
                 rec_id = db_id
             if not rec_id:
-                logging.error("Invalid or missing record id")
-                return None
-            db_rec = db(db.commands.id == rec_id).select().first()
-            if not db_rec:
-                logging.error("Unable to retrieve record, database record missing or invalid id")
-                return None
-        #elif db_rec and isinstance(db_rec, Row):
-        #updated_vendors = list()
-        #else:
-        query = (db.commands.id == db_id) & (db.commands.vendors.contains(self.vendors, all=True))
-        if db(query).count() == 0:
+                raise ValueError(self.__class__.__name__, "Invalid or missing record id")
+            db_rec = db(db.commands.id == rec_id).select().first()    
+        if not db_rec or (db_rec and not isinstance(db_rec, Row)):
+            raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
+        modified = False
+        update_to_vendors = db_rec.vendors
+        if self.vendors and isinstance(self.vendors, list):
+            updates = [v.strip().capitalize() for v in self.vendors if not v.strip().capitalize() in db_rec.vendors]
+            if updates:
+                update_to_vendors.extend(updates)
+                modified = True
+        if not modified:
             return None
-        db_rec = db(query).select().first()
-        updated_vendors = db_rec.vendors
-        update = [
-            v.strip().capitalize() for v in self.vendors if not v.strip().capitalize() in db_rec.vendors
-        ]
-        if update:
-            return sorted(updated_vendors.extend(update))
-        return None
+        return sorted(update_to_vendors)
+    
+    def update_functions(self, db_rec=None, db_id=None):
+        if db_rec is None:
+            if db_id is None:
+                rec_id = self.get_id(default=db_id)
+            else:
+                rec_id = db_id
+            if not rec_id:
+                raise ValueError(self.__class__.__name__, "Invalid or missing record id")
+            db_rec = db(db.commands.id == rec_id).select().first()    
+        if not db_rec or (db_rec and not isinstance(db_rec, Row)):
+            raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
+        modified = False
+        update_to_functions = db_rec.device_functions
+        if self.device_functions and isinstance(self.device_functions, list):
+            updates = [df.strip().capitalize() for df in self.device_functions if not
+                        df.strip().capitalize() in db_rec.device_functions]
+            if updates:
+                update_to_functions.extend(updates)
+                modified = True
+        if not modified:
+            return None
+        return sorted(update_to_functions)
+    
+    def update_roles(self, db_rec=None, db_id=None):
+        if db_rec is None:
+            if db_id is None:
+                rec_id = self.get_id(default=db_id)
+            else:
+                rec_id = db_id
+            if not rec_id:
+                raise ValueError(self.__class__.__name__, "Invalid or missing record id")
+            db_rec = db(db.commands.id == rec_id).select().first()    
+        if not db_rec or (db_rec and not isinstance(db_rec, Row)):
+            raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
+        modified = False
+        update_to_roles = db_rec.device_roles
+        if self.device_roles and isinstance(self.device_roles, list):
+            updates = [dr.strip().upper() for dr in self.device_roles if not
+                        dr.strip().upper() in db_rec.device_roles]
+            if updates:
+                update_to_roles.extend(updates)
+                modified = True
+        if not modified:
+            return None
+        return sorted(update_to_roles)
     
     def from_json(self, json_data):
         """

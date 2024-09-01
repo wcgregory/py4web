@@ -110,7 +110,7 @@ class DBDevice(BCMDb):
             return True
         # catch-all error
         logging.warning("Unknown Error, more information/debugging required")
-        #db.rollback()
+        db.rollback()
         return False
     
     def is_record_modified(self, db_rec=None, db_id=None):
