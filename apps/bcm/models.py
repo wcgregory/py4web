@@ -53,6 +53,7 @@ db.define_table(
     Field('commands', 'list:reference commands'),
     Field('region', 'string', requires=IS_IN_SET(REGIONS), notnull=True),
     Field('site_code', 'string', requires=IS_IN_SET(SITE_CODES), notnull=True),
+    Field('comment', 'string'),
     Field('created_at', 'datetime', notnull=True),
     Field('modified_on', 'datetime'),
     format='%(name)s %(mgmt_ip)s'

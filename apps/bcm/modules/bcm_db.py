@@ -12,9 +12,9 @@ class BCMDb(object):
         self.db_created = False
         self.json_import = False
     
-    def get_id(self):
+    def get_id(self, default=None):
         """Return the class DB id"""
-        return self.db_id
+        return self.db_id if self.db_id else default
     
     @staticmethod
     def get_timestamp():
