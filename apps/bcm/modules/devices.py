@@ -21,6 +21,7 @@ class DBDevice(BCMDb):
         self.name = name
         self.mgmt_ip = mgmt_ip
         self.vendor = None
+        self.os = None
         self.device_function = None
         self.device_roles = list()
         self.commands = list()
@@ -55,6 +56,7 @@ class DBDevice(BCMDb):
         self.name = db_rec.name
         self.mgmt_ip = db_rec.mgmt_ip
         self.vendor = db_rec.vendor
+        self.os = db_rec.os
         self.device_function = db_rec.device_function
         self.device_roles = db_rec.device_roles
         self.commands = db_rec.commands
@@ -83,7 +85,7 @@ class DBDevice(BCMDb):
             self.created_at = DBDevice.get_timestamp()
             self.modified_on = self.created_at
             db.devices.insert(name=self.name, mgmt_ip=self.mgmt_ip, vendor=self.vendor,
-                device_function=self.device_function, device_roles=self.device_roles,
+                os=self.os, device_function=self.device_function, device_roles=self.device_roles,
                 commands=self.commands, region=self.region, site_code=self.site_code,
                 comment=self.comment, created_at=self.created_at, modified_on=self.modified_on)
             db.commit()
@@ -101,7 +103,7 @@ class DBDevice(BCMDb):
                 return False
             self.modified_on = DBDevice.get_timestamp()
             db.devices.update_or_insert(query,
-                name=self.name, mgmt_ip=self.mgmt_ip, vendor=self.vendor,
+                name=self.name, mgmt_ip=self.mgmt_ip, vendor=self.vendor, os=self.os,
                 device_function=self.device_function, device_roles=self.device_roles,
                 commands=self.commands, region=self.region, site_code=self.site_code,
                 comment=self.comment, modified_on=self.modified_on)
@@ -134,6 +136,7 @@ class DBDevice(BCMDb):
             raise TypeError(self.__class__.__name__, f"Invalid type expecting Row received {type(db_rec)}")
         if (
             self.vendor != db_rec.vendor or
+            self.os != db_rec.os or
             self.device_function != db_rec.device_function or
             self.device_roles != db_rec.device_roles or
             self.commands != db_rec.commands or
@@ -192,6 +195,8 @@ class DBDevice(BCMDb):
             self.mgmt_ip = json_data['mgmt_ip'].strip()
         if 'vendor' in json_data.keys() and json_data['vendor']:
             self.vendor = json_data['vendor'].strip().capitalize()
+        if 'os' in json_data.keys() and json_data['os']:
+            self.os = json_data['os'].strip().lower()
         if 'device_function' in json_data.keys() and json_data['device_function']:
             self.device_function = json_data['device_function'].strip().capitalize()
         if 'device_roles' in json_data.keys() and json_data['device_roles']:
@@ -220,6 +225,6 @@ class DBDevice(BCMDb):
         :return: class attributes as dict
         """
         return dict(id=self.db_id, name=self.name, mgmt_ip=self.mgmt_ip, vendor=self.vendor,
-            device_function=self.device_function, device_roles=self.device_roles,
+            os=self.os, device_function=self.device_function, device_roles=self.device_roles,
             commands=self.commands, region=self.region, site_code=self.site_code,
             comment=self.comment, created_at=self.created_at, modified_on=self.modified_on)

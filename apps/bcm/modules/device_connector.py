@@ -19,32 +19,39 @@ class NetConnect():
     Netmiko ConnectHandler wrapper class
     """
     def __init__(self, host=None, vendor=None):
-        self.vendor = vendor
         self.host = host
+        self.host_vendor = vendor
+        self.host_os = None
         self.username = None
         self.password = None
         self.connect = None
         self.is_connected = False
-        if self.vendor:
-            self.device_type = self.set_netmiko_device_type(vendor=self.vendor)
+        if self.host_vendor:
+            self.device_type = self.set_netmiko_device_type(vendor=self.host_vendor)
     
-    def set_username(self, username=USER):
+    def set_username(self, username):
         self.username = username
     
-    def set_password(self, password=PSWD):
+    def set_password(self, password):
         self.password = password
+
+    def set_host_os(self, os):
+        self.host_os = os
     
     def set_netmiko_device_type(self, vendor=None):
         """Set netmiko device_type based on vendor"""
-        if not vendor and not self.vendor:
+        if not vendor and not self.host_vendor:
             raise ValueError(self.__class__.__name__, "Invalid or missing vendor of host")
         else:
-            self.vendor = vendor.strip().capitalize()
-        if self.vendor == 'Arista':
+            self.host_vendor = vendor.strip().capitalize()
+        if self.host_vendor == 'Arista':
             self.device_type = 'arista_eos'
-        elif self.vendor == 'Cisco':
-            self.device_type = 'cisco_ios'
-        elif self.vendor == 'Juniper':
+        elif self.host_vendor == 'Cisco':
+            if self.host_os and self.host_os == 'nxos':
+                self.device_type = 'cisco_nxos_ssh'
+            else:
+                self.device_type = 'cisco_ios'
+        elif self.host_vendor == 'Juniper':
             self.device_type = 'juniper_junos'
         else:
             self.device_type = 'unknown'
@@ -99,14 +106,13 @@ class NetConnect():
         """
         Send op command with json set and return output in json (dict) format
         """
-        if not cmd or (cmd and not isinstance(cmd, str)):
-            raise TypeError(self.__class__.__name__, f"Invalid type expecting str received {type(command)}")
-        if self.vendor == 'Arista' or self.vendor =='Cisco':
+        if self.host_vendor == 'Arista' or (self.host_vendor == 'Cisco' and self.host_os == 'nxos'):
             if re.search('([|]+.json$)', cmd):
                 command = cmd
             else:
                 command = cmd + " | json"
-        print(command)
+        if not command or (command and not isinstance(command, str)):
+            raise TypeError(self.__class__.__name__, f"Invalid type expecting str received {type(command)}")
         if not self.is_connected:
             response = None
             logging.warning(self.__class__.__name__, "Not connected!")

@@ -20,10 +20,11 @@ class DBNetworkPoller():
         self.response = dict()
         self.results = None
     
-    def run_commands(self):
+    def run_commands(self, auth=None):
         d = NetConnect(host=self.device.mgmt_ip, vendor=self.device.vendor)
-        d.set_username()
-        d.set_password()
+        d.set_username(username=auth[0])
+        d.set_password(password=auth[1])
+        d.set_host_os(os=self.device.os)
         self.load_device_commands()
         if not d.device_type:
             d.set_netmiko_device_type(vendor=self.device.vendor)
@@ -36,7 +37,7 @@ class DBNetworkPoller():
                 self.response.update({cmd_ref: {
                     "device": self.device.db_id, "command": cmd_id
                 }})
-                if d.device_type == 'cisco_ios':
+                if self.device.os == 'ios':
                     result = d.send_op_command(self.commands[cmd_id])
                 else:
                     result = d.send_op_command_json(self.commands[cmd_id])

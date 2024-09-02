@@ -8,6 +8,7 @@ from .common import db, Field
 from pydal.validators import *
 
 VENDORS = ('Arista', 'Cisco', 'Juniper')
+DEVICE_OS = ('eos', 'veos', 'ios', 'nxos', 'iosxr', 'junos')
 DEVICE_FUNCTIONS = ('Firewall', 'Router', 'Switch')
 DEVICE_ROLES = ('CORE', 'GWAN', 'INTERNET', 'EXTRANET', 'OTHER')
 
@@ -49,6 +50,7 @@ db.define_table(
     Field('name', 'string', length=24, notnull=True, unique=True),
     Field('mgmt_ip', 'string', length=15, unique=True),
     Field('vendor', 'string', requires=IS_IN_SET(VENDORS), notnull=True),
+    Field('os', 'string', requires=IS_IN_SET(DEVICE_OS), notnull=True),
     Field('device_function', 'string', requires=IS_IN_SET(DEVICE_FUNCTIONS), notnull=True),
     Field('device_roles', 'list:string', requires=IS_IN_SET(DEVICE_ROLES), notnull=True),
     Field('commands', 'list:reference commands'),

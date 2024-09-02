@@ -12,6 +12,7 @@ DEVICES = [
         "name": "rtra-dumy-0001",
         "mgmt_ip": "123.123.123.1",
         "vendor": "Arista",
+        "os": "eos",
         "device_function": "Router",
         "device_roles": ["CORE"],
         "commands": [],
@@ -22,6 +23,7 @@ DEVICES = [
         "name": "rtra-dumy-0002",
         "mgmt_ip": "123.123.123.2",
         "vendor": "Arista",
+        "os": "eos",
         "device_function": "Router",
         "device_roles": ['CORE'],
         "commands": [],
@@ -29,15 +31,27 @@ DEVICES = [
         "site_code": "HACL"
     },
     {
-        "name": "cisco-sandbox-01",
+        "name": "cisco_ios-sandbox-01",
         "mgmt_ip": "sandbox-iosxe-latest-1.cisco.com",
         "vendor": "Cisco",
+        "os": "ios",
         "device_function": "Router",
         "device_roles": ['CORE'],
         "commands": [1, 2],
         "region": "EMEA",
         "site_code": "HACL"
     },
+    {
+        "name": "cisco_nxos-sandbox-01",
+        "mgmt_ip": "sbx-nxos-mgmt.cisco.com",
+        "vendor": "Cisco",
+        "os": "nxos",
+        "device_function": "Router",
+        "device_roles": ['CORE'],
+        "commands": [1, 2],
+        "region": "EMEA",
+        "site_code": "HACL"
+    }
 ]
 
 COMMANDS = [
@@ -110,5 +124,9 @@ for result in RESULTS:
     record.save()
 
 device = DBNetworkPoller(device_id=3)
-device.run_commands()
+device.run_commands(auth=('admin', 'C1sco12345'))
+device.save_to_results()
+
+device = DBNetworkPoller(device_id=4)
+device.run_commands(auth=('admin', 'Admin_1234!'))
 device.save_to_results()
