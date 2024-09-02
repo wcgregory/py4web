@@ -79,7 +79,6 @@ class DBNetworkPoller():
         """
         if self.response:
             for result in self.response.keys():
-                print(result)
                 r = DBResult()
                 r.from_json(json_data=self.response[result])
                 r.save()
