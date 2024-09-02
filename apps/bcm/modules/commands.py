@@ -22,7 +22,7 @@ class DBCommand(BCMDb):
         self.vendors = list()
         self.device_functions = list()
         self.device_roles = list()
-        self.comment = None
+        self.comment = comment
         self.created_at = None
         self.modified_on = None
         if self.db_id:
@@ -119,7 +119,8 @@ class DBCommand(BCMDb):
         modified = False
         update_to_vendors = db_rec.vendors
         if self.vendors and isinstance(self.vendors, list):
-            updates = [v.strip().capitalize() for v in self.vendors if not v.strip().capitalize() in db_rec.vendors]
+            updates = [v.strip().capitalize() for v in self.vendors if not
+                        v.strip().capitalize() in db_rec.vendors]
             if updates:
                 update_to_vendors.extend(updates)
                 modified = True

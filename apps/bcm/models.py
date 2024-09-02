@@ -74,4 +74,16 @@ db.define_table(
     format='%(comment)s'
 )
 
+db.define_table(
+    'result_reviews',
+    Field('current_result', 'reference results', notnull=True),
+    Field('last_result', 'reference results', notnull=True),
+    Field('reviewed', 'boolean'),
+    Field('reviewed_at', 'datetime'),
+    Field('review_status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),
+    Field('report', 'text'),
+    Field('comment', 'string'),
+    format='%(comment)s'
+)
+
 db.commit()

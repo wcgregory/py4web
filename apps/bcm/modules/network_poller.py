@@ -11,9 +11,9 @@ from .results import DBResult
 from .device_connector import NetConnect
 
 
-class DBNetworkPoller():
+class NetworkPoller():
     """
-    DB Abstraction class for uniform interaction with DB Tables
+    Abstraction class for uniform interaction with DB Tables
     """
     def __init__(self, device_id=None):
         self.device = DBDevice(db_id=device_id)
@@ -40,7 +40,7 @@ class DBNetworkPoller():
                     "device": self.device.db_id, "command": cmd_id
                 }})
                 if self.device.os == 'ios':
-                    result = d.send_op_command(self.commands[cmd_id])
+                    result = d.send_op_command(self.commands[cmd_id], use_textfsm=True)
                 else:
                     result = d.send_op_command_json(self.commands[cmd_id])
                 result_time = self.device.get_timestamp()
@@ -50,10 +50,8 @@ class DBNetworkPoller():
                 else:
                     result = 'Failure'
                     result_status = result
-                self.response[cmd_ref].update({
-                    "status": f"{result_status}",
-                    "result": result,
-                    "comment": f"{result_status} @{result_time}"
+                self.response[cmd_ref].update({"status": f"{result_status}",
+                    "result": result, "comment": f"{result_status} @{result_time}"
                 })
     
     def load_device_commands(self, all=True, subset=None):
@@ -69,6 +67,7 @@ class DBNetworkPoller():
         for cmd_id in commands:
             c = DBCommand(db_id=cmd_id)
             self.commands.update({c.db_id: c.syntax})
+        if self.commands:
             return True
         # catch all error
         logging.warning("Unknown error, more information/debugging required")

@@ -84,7 +84,7 @@ class NetConnect():
         if self.connect and self.connect.is_alive():
             self.is_connected = True
 
-    def send_op_command(self, cmd, timing=False):
+    def send_op_command(self, cmd, timing=False, use_textfsm=False):
         """
         Send op command and return output
         """
@@ -97,7 +97,12 @@ class NetConnect():
             logging.warning(self.__class__.__name__, "Not connected!")
             return response
         if not timing:
-            response = self.connect.send_command(command)
+            if not use_textfsm:
+                response = self.connect.send_command(command)
+            else:
+                response = self.connect.send_command(command, use_textfsm=True)
+        elif timing and use_textfsm:
+            response = self.connect.send_command_timing(command, use_textfsm=True)
         else:
             response = self.connect.send_command_timing(command)
         return response

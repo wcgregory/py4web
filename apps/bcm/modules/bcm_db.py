@@ -38,6 +38,15 @@ class BCMDb(object):
         """
         raise NotImplemented()
     
+    def save(self):
+        """
+        Save class to DB record - creator/updater method
+        Must not have or use a class db_id, a DB id will be created
+        ---
+        :return True or False: based on whether a new record is created or not
+        """
+        raise NotImplemented()
+    
     def from_json(self, json_data):
         """
         Class import loader.
@@ -51,14 +60,5 @@ class BCMDb(object):
         Returns class attributes in dict format.
         ---
         :return: class attributes as dict
-        """
-        raise NotImplemented()
-    
-    def set_db_record(self):
-        """
-        Class to DB record creator
-        Must not have or use a class db_id, a DB id will be created
-        ---
-        :return True or False: based on whether a new record is created or not
         """
         raise NotImplemented()

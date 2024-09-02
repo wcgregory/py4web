@@ -5,7 +5,7 @@ from datetime import datetime
 from .devices import DBDevice
 from .commands import DBCommand
 from .results import DBResult
-from .network_poller import DBNetworkPoller
+from .network_poller import NetworkPoller
 
 DEVICES = [
     {
@@ -123,12 +123,12 @@ for result in RESULTS:
     record.from_json(result)
     record.save()
 
-device = DBNetworkPoller(device_id=3)
+device = NetworkPoller(device_id=3)
 device.load_device_commands()
 device.run_device_commands(auth=('admin', 'C1sco12345'))
 device.save_results()
 
-device = DBNetworkPoller(device_id=4)
+device = NetworkPoller(device_id=4)
 device.load_device_commands()
 device.run_device_commands(auth=('admin', 'Admin_1234!'))
 device.save_results()
