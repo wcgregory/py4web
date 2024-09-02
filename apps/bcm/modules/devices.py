@@ -76,7 +76,7 @@ class DBDevice(BCMDb):
         query = (db.devices.name == self.name) & (db.devices.mgmt_ip == self.mgmt_ip)
         if db(query).count() == 0:
             # create query to check for duplicates of unique fields before save
-            is_unique = db(db.devices.name == self.name) | (db.devices.mgmt_ip == self.mgmt_ip)
+            is_unique = (db.devices.name == self.name) | (db.devices.mgmt_ip == self.mgmt_ip)
             if db(is_unique).count() > 0:
                 logging.warning(f"Duplicate value in 'devices' for name={self.name} or mgmt_ip={self.mgmt_ip}")
                 return False
@@ -200,7 +200,7 @@ class DBDevice(BCMDb):
             elif isinstance(json_data['device_roles'], list):
                 self.device_roles = [role.strip().upper() for role in json_data['device_roles']]
         if 'commands' in json_data.keys() and json_data['commands']:
-            self.commands = [cmd.strip() for cmd in json_data['commands']]
+            self.commands = json_data['commands']
         if 'region' in json_data.keys() and json_data['region']:
             self.region = json_data['region'].strip().upper()
         if 'site_code' in json_data.keys() and json_data['site_code']:

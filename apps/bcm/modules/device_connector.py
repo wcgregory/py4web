@@ -9,8 +9,9 @@ from netmiko import NetmikoTimeoutException
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from netmiko.ssh_dispatcher import ConnectHandler
 
-USER = 'myuser'
-PSWD = os.getenv('PSWD')
+USER = 'admin'
+PSWD = 'C1sco12345'
+#PSWD = os.getenv('PSWD')
 
 
 class NetConnect():
@@ -27,10 +28,10 @@ class NetConnect():
         if self.vendor:
             self.device_type = self.set_netmiko_device_type(vendor=self.vendor)
     
-    def set_username(self, username):
+    def set_username(self, username=USER):
         self.username = username
     
-    def set_password(self, password):
+    def set_password(self, password=PSWD):
         self.password = password
     
     def set_netmiko_device_type(self, vendor=None):
@@ -100,11 +101,12 @@ class NetConnect():
         """
         if not cmd or (cmd and not isinstance(cmd, str)):
             raise TypeError(self.__class__.__name__, f"Invalid type expecting str received {type(command)}")
-        if self.vendor == ('Arista' or 'Cisco'):
+        if self.vendor == 'Arista' or self.vendor =='Cisco':
             if re.search('([|]+.json$)', cmd):
                 command = cmd
             else:
                 command = cmd + " | json"
+        print(command)
         if not self.is_connected:
             response = None
             logging.warning(self.__class__.__name__, "Not connected!")

@@ -5,7 +5,7 @@ from datetime import datetime
 from .devices import DBDevice
 from .commands import DBCommand
 from .results import DBResult
-
+from .network_poller import DBNetworkPoller
 
 DEVICES = [
     {
@@ -27,13 +27,29 @@ DEVICES = [
         "commands": [],
         "region": "EMEA",
         "site_code": "HACL"
-    }
+    },
+    {
+        "name": "cisco-sandbox-01",
+        "mgmt_ip": "sandbox-iosxe-latest-1.cisco.com",
+        "vendor": "Cisco",
+        "device_function": "Router",
+        "device_roles": ['CORE'],
+        "commands": [1, 2],
+        "region": "EMEA",
+        "site_code": "HACL"
+    },
 ]
 
 COMMANDS = [
     {
         "syntax": "show version",
         "vendors": ['Arista', 'Cisco', 'Juniper'],
+        "device_functions": ['Firewall', 'Switch', 'Router'],
+        "device_roles": ['CORE', 'GWAN']
+    },
+    {
+        "syntax": "show ip interface brief",
+        "vendors": ['Arista', 'Cisco'],
         "device_functions": ['Firewall', 'Switch', 'Router'],
         "device_roles": ['CORE', 'GWAN']
     }
@@ -92,3 +108,7 @@ for result in RESULTS:
     record = DBResult()
     record.from_json(result)
     record.save()
+
+device = DBNetworkPoller(device_id=3)
+device.run_commands()
+device.save_to_results()
