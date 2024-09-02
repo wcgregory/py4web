@@ -106,7 +106,7 @@ class NetConnect():
         """
         Send op command with json set and return output in json (dict) format
         """
-        if self.host_vendor == 'Arista' or (self.host_vendor == 'Cisco' and self.host_os == 'nxos'):
+        if self.host_vendor == 'Arista' or self.host_vendor == 'Cisco':
             if re.search('([|]+.json$)', cmd):
                 command = cmd
             else:

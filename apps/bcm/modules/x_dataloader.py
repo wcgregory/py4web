@@ -124,9 +124,11 @@ for result in RESULTS:
     record.save()
 
 device = DBNetworkPoller(device_id=3)
-device.run_commands(auth=('admin', 'C1sco12345'))
-device.save_to_results()
+device.load_device_commands()
+device.run_device_commands(auth=('admin', 'C1sco12345'))
+device.save_results()
 
 device = DBNetworkPoller(device_id=4)
-device.run_commands(auth=('admin', 'Admin_1234!'))
-device.save_to_results()
+device.load_device_commands()
+device.run_device_commands(auth=('admin', 'Admin_1234!'))
+device.save_results()
