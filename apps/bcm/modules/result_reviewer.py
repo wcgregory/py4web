@@ -4,74 +4,77 @@ import logging
 
 from pydal.objects import Row
 
-from .bcm_db import BCMDb
 from ..models import db
+from .devices import DBDevice
+from .results import DBResult
+from .device_parsers import CiscoNXOSParser
 
-
-class ResultsReview(BCMDb):
+class ResultsReview():
     """
-    DB Abstraction class for uniform interaction with DB Table 'result_reviews'
+    Abstraction class for uniform interaction for reviewing and comparing db results
     """
-    def __init__(self, db_id=None):
+    def __init__(self, current_result=None, previous_result=None):
         """
         Standard constructor class
         """
-        self.current_result = None
-        self.last_result = None
+        self.device = None
+        self.device_os = None
+        self.command = None
+        if current_result:
+            self.current_result = self.load_result(result=current_result)
+        if previous_result:
+            self.previous_result = self.load_result(result=previous_result)
         self.reviewed = bool()
         self.reviewed_at = None
         self.review_status = None
         self.report = None
         self.comment = None
-        if self.db_id:
-            self.load_by_id()
     
-    def load_by_id(self, db_rec=None, db_id=None):
-        """
-        Method to load a result_reviews object from the DB table using the DB id
-        ---
-        :param db_rec: a valid result_reviews DB record
-        :type db_rec: Row (pydal.objects.Row)
-        :param db_id: a valid result_reviews DB id
-        :type db_id: int
-        """
-        if db_rec is None:
-            if db_id is None:
-                rec_id = self.get_id()
-            else:
-                rec_id = db_id
-            if not rec_id:
-                raise ValueError(self.__class__.__name__, "Invalid or missing record id")
-            db_rec = db(db.result_reviews.id == rec_id).select().first()
-        if not db_rec:
-            raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
-        self.current_result = db_rec.current_result
-        self.last_result = db_rec.last_result
-        self.reviewed = db_rec.reviewed
-        self.reviewed_at = db_rec.reviewed_at
-        self.review_status = db_rec.review_status
-        self.report = db_rec.report
-        self.comment = db_rec.comment
-        self.db_loaded = True
+    def load_result(self, result):
+        """Create, load and return a 'result' object or None"""
+        if isinstance(result, int):
+            result = DBResult(db_id=result)
+        elif isinstance(result, Row):
+            result = DBResult()
+            result.load_by_id(db_rec=result)
+        if not result:
+            raise TypeError(self.__class__.__name__, f"Expected 'result' class, received {type(result)}")
+        if self.device and self.device != result.device:
+            raise ValueError(self.__class__.__name__, f"Device mismatch id={result.device} and id={self.device}")  
+        if self.command and result.command != self.command:
+            raise ValueError(self.__class__.__name__, f"Command mismatch id={result.command} and id={self.command}")
+        self.device = result.device
+        self.command = result.command
+        return result
     
-    def save(self):
+    def get_device_os(self):
+        if self.device:
+            d = DBDevice(db_id=self.device)
+        self.device_os = d.os
+    
+    def results_comparison(self):
         """
-        Save a record to DB - creator/updater method
-        Must set the class db_id to the new DB id
-        ---
-        :return True or False: based on whether a new record is created or not
+        Method to compare two 'result' classes 
         """
-        pass
+        if self.device == 'Cisco' and self.device_os == 'nxos':
+            parser = CiscoNXOSParser()
+            parser.add_command_parser()
+            # 'TABLE_intf': {'ROW_intf': []
+        self.review_status = 'Running'
+        cur_res = None
+        pre_res = None
     
     def from_json(self, json_data):
         """
         Method to load a result_reviews object from a json data set.
         Must not set the DB id (db_id), if successful set self.json_import to True
         """
+        if 'device' in json_data.keys() and json_data['device']:
+            self.device = int(json_data['device'])
         if 'current_result' in json_data.keys() and json_data['current_result']:
-            self.current_result = int(json_data['current_result'])
-        if 'last_result' in json_data.keys() and json_data['last_result']:
-            self.last_result = int(json_data['last_result'])
+            self.current_result = json_data['current_result']
+        if 'previous_result' in json_data.keys() and json_data['previous_result']:
+            self.previous_result = json_data['previous_result']
         if 'reviewed' in json_data.keys() and json_data['reviewed']:
             self.reviewed = json_data['reviewed']
         if 'reviewed_at' in json_data.keys() and json_data['reviewed_at']:
@@ -90,7 +93,7 @@ class ResultsReview(BCMDb):
         ---
         :return: class attributes as dict
         """
-        return dict(id=self.db_id, current_result=self.current_result,
-            last_result=self.last_result, reviewed=self.reviewed,
+        return dict(device=self.device, current_result=self.current_result.id,
+            previous_result=self.previous_result.id, reviewed=self.reviewed,
             reviewed_at=self.reviewed_at, review_status=self.review_status,
             report=self.report, comment=self.comment)

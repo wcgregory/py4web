@@ -227,6 +227,10 @@ class DBCommand(BCMDb):
             self.device_roles = [role.strip().upper() for role in json_data['device_roles']]
         if 'comment' in json_data.keys() and json_data['comment']:
             self.comment =  json_data['comment'].strip()
+        if 'created_at' in json_data.keys() and json_data['created_at']:
+            self.created_at =  json_data['created_at']
+        if 'modified_on' in json_data.keys() and json_data['modified_on']:
+            self.modified_on = json_data['modified_on']
         self.json_import = True
     
     def to_json(self):

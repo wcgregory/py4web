@@ -13,7 +13,7 @@ from .device_connector import NetConnect
 
 class NetworkPoller():
     """
-    Abstraction class for uniform interaction with DB Tables
+    Abstraction class for uniform interaction with network devices
     """
     def __init__(self, device_id=None):
         self.device = DBDevice(db_id=device_id)
