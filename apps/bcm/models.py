@@ -40,9 +40,23 @@ db.define_table(
     Field('device_functions', 'list:string', requires=IS_IN_SET(DEVICE_FUNCTIONS), notnull=True),
     Field('device_roles', 'list:string', requires=IS_IN_SET(DEVICE_ROLES)),
     Field('comment', 'string'),
+    Field('output_parsers', 'list:reference command_parsers'),
     Field('created_at', 'datetime', notnull=True),
     Field('modified_on', 'datetime'),
     format='%(syntax)s'
+)
+
+db.define_table(
+    'command_parsers',
+    Field('vendor', 'string', requires=IS_IN_SET(VENDORS), notnull=True),
+    Field('command', 'reference commands', notnull=True),
+    Field('device_os', 'string', notnull=True),
+    Field('is_json', 'boolean'),
+    Field('output_parser', 'list:string', notnull=True),
+    Field('name', 'string'),
+    Field('created_at', 'datetime', notnull=True),
+    Field('modified_on', 'datetime'),
+    format='%(vendor)s %(device_os)s %(name)s'
 )
 
 db.define_table(

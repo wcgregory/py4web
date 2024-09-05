@@ -106,7 +106,7 @@ class DBDevice(BCMDb):
                 name=self.name, mgmt_ip=self.mgmt_ip, vendor=self.vendor, os=self.os,
                 device_function=self.device_function, device_roles=self.device_roles,
                 commands=self.commands, region=self.region, site_code=self.site_code,
-                comment=self.comment, modified_on=self.modified_on)
+                comment=self.comment, created_at=self.created_at, modified_on=self.modified_on)
             db.commit()
             logging.warning(f"Updated record in table 'devices' with id={self.db_id}")
             return True

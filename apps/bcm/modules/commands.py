@@ -193,11 +193,9 @@ class DBCommand(BCMDb):
             raise TypeError(self.__class__.__name__, f"Invalid type expecting Row received {type(db_rec)}")
         if db(db.devices.commands.contains(db_rec.id)).count() > 0:
             logging.warning(f"Unable to delete command id={db_rec.id} while used by device in 'devices'")
-            return False
-        if db(db.results.command.belongs(db(db.commands.id == db_rec.id).select())).count() > 0:
+        elif db(db.results.command.belongs(db(db.commands.id == db_rec.id).select())).count() > 0:
             logging.warning(f"Unable to delete command id={db_rec.id} while in table 'results'")
-            return False
-        if (
+        elif (
             db(db.devices.commands.contains(db_rec.id)).count() == 0 and
             db(db.results.command.belongs(db(db.commands.id == db_rec.id).select())).count() == 0
         ):
@@ -208,13 +206,14 @@ class DBCommand(BCMDb):
             self.db_loaded = False
             self.db_created = False
             return True
-        # catch all error
-        logging.warning("Unknown error, more information/debugging required")
+        else:
+            # catch all error
+            logging.warning("Unknown error, more information/debugging required")
         return False
 
     def from_json(self, json_data):
         """
-        Method to load a device object from a json data set.
+        Method to load a command object from a json data set.
         Must not set the DB id (db_id), if successful set self.json_import to True
         """
         if 'syntax' in json_data.keys() and json_data['syntax']:

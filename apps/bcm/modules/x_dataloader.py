@@ -6,6 +6,7 @@ from .devices import DBDevice
 from .commands import DBCommand
 from .results import DBResult
 from .network_poller import NetworkPoller
+from .command_parsers import DBParser
 
 DEVICES = [
     {
@@ -65,7 +66,7 @@ COMMANDS = [
         "syntax": "show ip interface brief",
         "vendors": ['Arista', 'Cisco'],
         "device_functions": ['Firewall', 'Switch', 'Router'],
-        "device_roles": ['CORE', 'GWAN']
+        "device_roles": ['CORE', 'GWAN'],
     }
 ]
 
@@ -108,6 +109,18 @@ RESULTS = [
     }
 ]
 
+PARSERS = [    
+    {
+        "vendor": "Cisco",
+        "command": 2,
+        "device_os": "nxos",
+        "is_json": True,
+        "output_parser": ["TABLE_intf", "ROW_intf"],
+        "name": "nxos_sho_ip_int_brief"
+    }
+]
+
+
 for device in DEVICES:
     record = DBDevice()
     record.from_json(device)
@@ -132,3 +145,9 @@ device = NetworkPoller(device_id=4)
 device.load_device_commands()
 device.run_device_commands(auth=('admin', 'Admin_1234!'))
 device.save_results()
+
+
+for parser in PARSERS:
+    record = DBParser()
+    record.from_json(parser)
+    record.save()
