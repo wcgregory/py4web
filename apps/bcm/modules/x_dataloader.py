@@ -152,6 +152,4 @@ device.run_device_commands(auth=('admin', 'Admin_1234!'))
 device.save_results()
 
 add_cmdparser = DBCommand(2)
-print(add_cmdparser.output_parsers)
 add_cmdparser.update_command_parsers()
-print(add_cmdparser.output_parsers)
