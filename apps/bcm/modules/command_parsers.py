@@ -112,7 +112,7 @@ class DBParser(BCMDb):
     
     def is_record_modified(self, db_rec=None, db_id=None):
         """
-        Method to detect changes between class and DB record
+        Method to detect changes between class and DB record on unqueried fields
         ---
         :param db_rec: a valid command_parsers DB record
         :type db_rec: Row (pydal.objects.Row)
@@ -156,7 +156,7 @@ class DBParser(BCMDb):
             raise TypeError(self.__class__.__name__, f"Invalid type expecting Row received {type(db_rec)}")
         if db(db.commands.output_parsers.contains(db_rec.id)).count() > 0:
             logging.warning(f"Unable to delete 'command_parsers' id={db_rec.id} while used "
-                            "as an output_parser' by a command in 'commands'")
+                            "as an 'output_parsers' by a command in 'commands'")
         elif db(db.commands.output_parsers.contains(db_rec.id)).count() == 0:
             db(db.devices.id == db_rec.id).delete()
             db.commit()

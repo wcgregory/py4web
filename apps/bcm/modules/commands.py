@@ -23,6 +23,7 @@ class DBCommand(BCMDb):
         self.device_functions = list()
         self.device_roles = list()
         self.comment = comment
+        self.output_parsers = list()
         self.created_at = None
         self.modified_on = None
         if self.db_id:
@@ -53,6 +54,7 @@ class DBCommand(BCMDb):
         self.device_functions = db_rec.device_functions
         self.device_roles = db_rec.device_roles
         self.comment = db_rec.comment
+        self.output_parsers = db_rec.output_parsers
         self.created_at = db_rec.created_at
         self.modified_on = db_rec.modified_on
         self.db_loaded = True
@@ -70,7 +72,8 @@ class DBCommand(BCMDb):
             self.modified_on = self.created_at
             db.commands.insert(syntax=self.syntax, vendors=self.vendors,
                 device_functions=self.device_functions, device_roles=self.device_roles,
-                comment=self.comment, created_at=self.created_at, modified_on=self.modified_on)
+                comment=self.comment, output_parsers=self.output_parsers,
+                created_at=self.created_at, modified_on=self.modified_on)
             db.commit()
             db_rec = db(query).select().first()
             if db_rec:
@@ -96,7 +99,8 @@ class DBCommand(BCMDb):
             self.modified_on = DBCommand.get_timestamp()
             db.commands.update_or_insert(query,
                 syntax=self.syntax, vendors=self.vendors, device_functions=self.device_functions,
-                device_roles=self.device_roles, comment=self.comment, modified_on=self.modified_on)
+                device_roles=self.device_roles, comment=self.comment, output_parsers=self.output_parsers,
+                created_at=self.created_at, modified_on=self.modified_on)
             db.commit()
             logging.warning(f"Updated record in table 'commands' with id={self.db_id}")
             return True
@@ -126,7 +130,7 @@ class DBCommand(BCMDb):
                 modified = True
         if not modified:
             return None
-        return sorted(update_to_vendors)
+        return update_to_vendors.sort()
     
     def update_functions(self, db_rec=None, db_id=None):
         if db_rec is None:
@@ -149,7 +153,7 @@ class DBCommand(BCMDb):
                 modified = True
         if not modified:
             return None
-        return sorted(update_to_functions)
+        return update_to_functions.sort()
     
     def update_roles(self, db_rec=None, db_id=None):
         if db_rec is None:
@@ -172,7 +176,46 @@ class DBCommand(BCMDb):
                 modified = True
         if not modified:
             return None
-        return sorted(update_to_roles)
+        return update_to_roles.sort()
+    
+    def update_command_parsers(self, db_rec=None, db_id=None):
+        """
+        Retrieve DB records from many to many mapping with table 'command_parsers'
+        Command parsers are used to standardise the output response by vendor_os
+        ---
+        :return True or False: based on whether 'commmand_parsers' exist for the command id
+        """
+        if db_rec is None:
+            if db_id is None:
+                rec_id = self.get_id(default=db_id)
+            else:
+                rec_id = db_id
+            if not rec_id:
+                raise ValueError(self.__class__.__name__, "Invalid or missing record id")
+            db_rec = db(db.commands.id == rec_id).select().first()
+        if not db_rec or (db_rec and not isinstance(db_rec, Row)):
+            raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
+        if db(db.command_parsers.command == db_rec.id).count() == 0:
+            logging.warning("There are no 'command_parsers' mapped to this command")
+            return False
+        cmd_parsers = db(db.command_parsers.command == db_rec.id).select()
+        output_parsers = [
+            parser_rec.id for parser_rec in cmd_parsers if not parser_rec.id in self.output_parsers
+        ]
+        if not output_parsers:
+            logging.warning(f"The command id={db_rec.id} 'output_parsers' are up-to-date")
+            return True
+        elif output_parsers:
+            self.output_parsers.extend(output_parsers)
+            self.output_parsers.sort()
+            self.modified_on = DBCommand.get_timestamp()
+            db_rec.update_record(output_parsers=self.output_parsers, modified_on=self.modified_on)
+            db.commit()
+            logging.warning(f"Updating the command id={db_rec.id} 'output_parsers'")
+            return True
+        # catch all error
+        logging.warning("Unknown error, more information/debugging required")
+        return False
     
     def delete(self, db_rec=None, db_id=None):
         """
