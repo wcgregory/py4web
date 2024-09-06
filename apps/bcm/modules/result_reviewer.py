@@ -7,7 +7,9 @@ from pydal.objects import Row
 from ..models import db
 from .devices import DBDevice
 from .results import DBResult
-from .device_parsers import CiscoNXOSParser
+from .command_parsers import DBParser
+#from .device_parsers import CiscoNXOSParser
+
 
 class ResultsReview():
     """
@@ -20,6 +22,7 @@ class ResultsReview():
         self.device = None
         self.device_os = None
         self.command = None
+        self.output_parser = None
         if current_result:
             self.current_result = self.load_result(result=current_result)
         if previous_result:
@@ -52,17 +55,28 @@ class ResultsReview():
             d = DBDevice(db_id=self.device)
         self.device_os = d.os
     
+    def get_output_parser(self):
+        if self.device and self.device_os and self.command:
+            query = db(db.command_parsers.vendor == self.device) & (
+                db(db.command_parsers.device_os == self.device_os))
+            query &= db(db.command_parsers.command == self.command)
+            parser = db(query).select()
+            #parsers = DBParser(db_id=)
+    
     def results_comparison(self):
         """
         Method to compare two 'result' classes 
         """
-        if self.device == 'Cisco' and self.device_os == 'nxos':
-            parser = CiscoNXOSParser()
-            parser.add_command_parser()
-            # 'TABLE_intf': {'ROW_intf': []
-        self.review_status = 'Running'
-        cur_res = None
-        pre_res = None
+        if not self.current_result or not self.previous_result:
+            raise ValueError(self.__class__.__name__, f"Missing 'results' for comparison")  
+
+        #if self.device == 'Cisco' and self.device_os == 'nxos':
+        #    parser = CiscoNXOSParser()
+        #    parser.add_command_parser()
+        #    # 'TABLE_intf': {'ROW_intf': []
+        #self.review_status = 'Running'
+        #cur_res = None
+        #pre_res = None
     
     def from_json(self, json_data):
         """

@@ -4,8 +4,8 @@ import logging
 
 from pydal.objects import Row
 
-from .bcm_db import BCMDb
 from ..models import db
+from .bcm_db import BCMDb
 
 
 class DBCommand(BCMDb):
@@ -178,10 +178,10 @@ class DBCommand(BCMDb):
             return None
         return update_to_roles.sort()
     
-    def update_command_parsers(self, db_rec=None, db_id=None):
+    def update_output_parsers(self, db_rec=None, db_id=None):
         """
         Retrieve DB records from many to many mapping with table 'command_parsers'
-        Command parsers are used to standardise the output response by vendor_os
+        Output parsers are used to standardise the output response by vendor_os
         ---
         :return True or False: based on whether 'commmand_parsers' exist for the command id
         """
@@ -199,16 +199,21 @@ class DBCommand(BCMDb):
             logging.warning("There are no 'command_parsers' mapped to this command")
             return False
         cmd_parsers = db(db.command_parsers.command == db_rec.id).select()
-        output_parsers = [
-            parser_rec.id for parser_rec in cmd_parsers if not parser_rec.id in self.output_parsers
-        ]
+        if not self.output_parsers:
+            output_parsers = [parser_rec.id for parser_rec in cmd_parsers]
+        else:
+            output_parsers = [
+                parser_rec.id for parser_rec in cmd_parsers if not parser_rec.id in self.output_parsers
+            ]
         if not output_parsers:
             logging.warning(f"The command id={db_rec.id} 'output_parsers' are up-to-date")
             return True
-        elif output_parsers:
+        if output_parsers:
             self.output_parsers.extend(output_parsers)
+            self.output_parsers.sort()
             self.modified_on = DBCommand.get_timestamp()
-            db_rec.update_record(output_parsers=self.output_parsers.sort(), modified_on=self.modified_on)
+            db_rec.update_record(output_parsers=self.output_parsers, modified_on=self.modified_on)
+            print(self.output_parsers)
             db.commit()
             logging.warning(f"Updating the command id={db_rec.id} 'output_parsers'")
             return True
@@ -216,7 +221,7 @@ class DBCommand(BCMDb):
         logging.warning("Unknown error, more information/debugging required")
         return False
     
-    def remove_command_parsers(self, db_rec=None, db_id=None, parser_id=None):
+    def remove_output_parsers(self, db_rec=None, db_id=None, parser_id=None):
         """
         Remove 'command_parsers' from command 'output_parsers'
         ---
@@ -239,7 +244,8 @@ class DBCommand(BCMDb):
                 return False
             else:
                 self.modified_on = DBCommand.get_timestamp()
-                db_rec.update_record(output_parsers=self.output_parsers.sort(), modified_on=self.modified_on)
+                self.output_parsers.sort()
+                db_rec.update_record(output_parsers=self.output_parsers, modified_on=self.modified_on)
                 db.commit()
                 logging.warning(f"Removed 'command_parser' id={parser_id} from 'output_parsers'")
             return True
@@ -250,7 +256,8 @@ class DBCommand(BCMDb):
                 return False
             else:
                 self.modified_on = DBCommand.get_timestamp()
-                db_rec.update_record(output_parsers=self.output_parsers.sort(), modified_on=self.modified_on)
+                self.output_parsers.sort()
+                db_rec.update_record(output_parsers=self.output_parsers, modified_on=self.modified_on)
                 db.commit()
                 logging.warning(f"Removed 'command_parser' id={parser_id} from 'output_parsers'")
                 return True

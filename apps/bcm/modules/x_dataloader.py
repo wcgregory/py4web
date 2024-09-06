@@ -115,7 +115,7 @@ PARSERS = [
         "command": 2,
         "device_os": "nxos",
         "is_json": True,
-        "output_parser": ["TABLE_intf", "ROW_intf"],
+        "parser_path": ["TABLE_intf", "ROW_intf"],
         "name": "nxos_sho_ip_int_brief"
     }
 ]
@@ -152,4 +152,4 @@ device.run_device_commands(auth=('admin', 'Admin_1234!'))
 device.save_results()
 
 add_cmdparser = DBCommand(2)
-add_cmdparser.update_command_parsers()
+add_cmdparser.update_output_parsers()

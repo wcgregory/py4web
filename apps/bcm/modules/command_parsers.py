@@ -23,7 +23,7 @@ class DBParser(BCMDb):
         self.command = None
         self.device_os = None
         self.is_json = bool()
-        self.output_parser = list()  # path to main body of response output
+        self.parser_path = list()  # path to main body of response output
         self.name = None
         self.created_at = None
         self.modified_on = None
@@ -54,7 +54,37 @@ class DBParser(BCMDb):
         self.command = db_rec.command
         self.device_os = db_rec.device_os
         self.is_json = db_rec.is_json
-        self.output_parser = db_rec.output_parser
+        self.parser_path = db_rec.parser_path
+        self.name = db_rec.name
+        self.created_at = db_rec.created_at
+        self.modified_on = db_rec.modified_on
+        self.db_loaded = True
+    
+    def load_by_command(self, db_rec=None, db_id=None, command_id=None):
+        """
+        Method to load a command_parser object from the DB table using the command id
+        Condition: will only load if device_os matches
+        ---
+        :param command_id: a valid command DB id
+        :type db_id: int
+        """
+        if db_rec is None:
+            if db_id is None:
+                rec_id = self.get_id()
+            else:
+                rec_id = db_id
+            if not rec_id:
+                raise ValueError(self.__class__.__name__, "Invalid or missing record id")
+            db_rec = db(db.commands.id == rec_id).select().first()    
+        if not db_rec:
+            raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
+        
+        self.db_id = db_rec.id
+        self.vendor = db_rec.vendor
+        self.command = db_rec.command
+        self.device_os = db_rec.device_os
+        self.is_json = db_rec.is_json
+        self.parser_path = db_rec.parser_path
         self.name = db_rec.name
         self.created_at = db_rec.created_at
         self.modified_on = db_rec.modified_on
@@ -82,7 +112,7 @@ class DBParser(BCMDb):
             self.modified_on = self.created_at
             db.command_parsers.insert(vendor=self.vendor, command=self.command,
                 device_os=self.device_os, is_json=self.is_json,
-                output_parser=self.output_parser, name=self.name,
+                parser_path=self.parser_path, name=self.name,
                 created_at=self.created_at, modified_on=self.modified_on)
             db.commit()
             db_rec = db(query).select().first()
@@ -100,8 +130,8 @@ class DBParser(BCMDb):
             self.modified_on = DBParser.get_timestamp()
             db.command_parsers.update_or_insert(query,
                 vendor=self.vendor, command=self.command, device_os=self.device_os,
-                is_json=self.is_json, output_parser=self.output_parser, name=self.name,
-                created_at=self.created_at, modified_on=self.modified_on)
+                is_json=self.is_json, parser_path=self.parser_path, name=self.name,
+                modified_on=self.modified_on)
             db.commit()
             logging.warning(f"Updated record in table 'command_parsers' with id={self.db_id}")
             return True
@@ -130,7 +160,7 @@ class DBParser(BCMDb):
         elif db_rec and not isinstance(db_rec, Row):
             raise TypeError(self.__class__.__name__, f"Invalid type expecting Row received {type(db_rec)}")
         if (
-            self.output_parser != db_rec.output_parser or
+            self.parser_path != db_rec.parser_path or
             self.name != db_rec.name
         ):
             return True
@@ -154,10 +184,10 @@ class DBParser(BCMDb):
             db_rec = db(db.command_parsers.id == rec_id).select().first()
         if not db_rec or (db_rec and not isinstance(db_rec, Row)):
             raise TypeError(self.__class__.__name__, f"Invalid type expecting Row received {type(db_rec)}")
-        if db(db.commands.output_parsers.contains(db_rec.id)).count() > 0:
+        if db(db.commands.parser_path.contains(db_rec.id)).count() > 0:
             logging.warning(f"Unable to delete 'command_parsers' id={db_rec.id} while used "
-                            "as an 'output_parsers' by a command in 'commands'")
-        elif db(db.commands.output_parsers.contains(db_rec.id)).count() == 0:
+                            "as an 'parser_path' by a command in 'commands'")
+        elif db(db.commands.parser_path.contains(db_rec.id)).count() == 0:
             db(db.devices.id == db_rec.id).delete()
             db.commit()
             logging.warning(f"Record id={db_rec.id} deleted from table 'command_parsers'")
@@ -183,8 +213,8 @@ class DBParser(BCMDb):
             self.device_os = json_data['device_os'].lower()
         if 'is_json' in json_data.keys():
             self.is_json = json_data['is_json']
-        if 'output_parser' in json_data.keys() and json_data['output_parser']:
-            self.output_parser =  json_data['output_parser']
+        if 'parser_path' in json_data.keys() and json_data['parser_path']:
+            self.parser_path =  json_data['parser_path']
         if 'name' in json_data.keys() and json_data['name']:
             self.name =  json_data['name']
         if 'created_at' in json_data.keys() and json_data['created_at']:
@@ -200,5 +230,5 @@ class DBParser(BCMDb):
         :return: class attributes as dict
         """
         return dict(id=self.db_id, vendor=self.vendor, command=self.command,
-            device_os=self.device_os, is_json=self.is_json, output_parser=self.output_parser,
+            device_os=self.device_os, is_json=self.is_json, parser_path=self.parser_path,
             name=self.name, created_at=self.created_at, modified_on=self.modified_on)
