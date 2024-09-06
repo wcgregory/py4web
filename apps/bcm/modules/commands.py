@@ -207,11 +207,59 @@ class DBCommand(BCMDb):
             return True
         elif output_parsers:
             self.output_parsers.extend(output_parsers)
-            self.output_parsers.sort()
             self.modified_on = DBCommand.get_timestamp()
-            db_rec.update_record(output_parsers=self.output_parsers, modified_on=self.modified_on)
+            db_rec.update_record(output_parsers=self.output_parsers.sort(), modified_on=self.modified_on)
             db.commit()
             logging.warning(f"Updating the command id={db_rec.id} 'output_parsers'")
+            return True
+        # catch all error
+        logging.warning("Unknown error, more information/debugging required")
+        return False
+    
+    def remove_command_parsers(self, db_rec=None, db_id=None, parser_id=None):
+        """
+        Remove 'command_parsers' from command 'output_parsers'
+        ---
+        :return True or False: based on whether 'commmand_parsers' is removed
+        """
+        if db_rec is None:
+            if db_id is None:
+                rec_id = self.get_id(default=db_id)
+            else:
+                rec_id = db_id
+            if not rec_id:
+                raise ValueError(self.__class__.__name__, "Invalid or missing record id")
+            db_rec = db(db.commands.id == rec_id).select().first()
+        if not db_rec or (db_rec and not isinstance(db_rec, Row)):
+            raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
+        if parser_id and isinstance(parser_id, int):
+            self.output_parsers = [op_id for op_id in self.output_parsers if op_id != parser_id]
+            if self.output_parsers == db_rec.output_parsers:
+                logging.warning(f"No 'command_parser' id={parser_id} found in 'output_parsers'")
+                return False
+            else:
+                self.modified_on = DBCommand.get_timestamp()
+                db_rec.update_record(output_parsers=self.output_parsers.sort(), modified_on=self.modified_on)
+                db.commit()
+                logging.warning(f"Removed 'command_parser' id={parser_id} from 'output_parsers'")
+            return True
+        if parser_id and isinstance(parser_id, list):
+            self.output_parsers = [op_id for op_id in self.output_parsers if not op_id in parser_id]
+            if self.output_parsers == db_rec.output_parsers:
+                logging.warning(f"No 'command_parser' id={parser_id} found in 'output_parsers'")
+                return False
+            else:
+                self.modified_on = DBCommand.get_timestamp()
+                db_rec.update_record(output_parsers=self.output_parsers.sort(), modified_on=self.modified_on)
+                db.commit()
+                logging.warning(f"Removed 'command_parser' id={parser_id} from 'output_parsers'")
+                return True
+        elif not parser_id:
+            removed = self.output_parsers
+            self.modified_on = DBCommand.get_timestamp()
+            db_rec.update_record(output_parsers=list(), modified_on=self.modified_on)
+            db.commit()
+            logging.warning(f"Removed all 'command_parsers', {removed} from 'output_parsers'")
             return True
         # catch all error
         logging.warning("Unknown error, more information/debugging required")
@@ -238,9 +286,12 @@ class DBCommand(BCMDb):
             logging.warning(f"Unable to delete command id={db_rec.id} while used by device in 'devices'")
         elif db(db.results.command.belongs(db(db.commands.id == db_rec.id).select())).count() > 0:
             logging.warning(f"Unable to delete command id={db_rec.id} while in table 'results'")
+        elif db(db.command_parsers.command.belongs(db(db.commands.id == db_rec.id).select())).count() > 0:
+            logging.warning(f"Unable to delete command id={db_rec.id} while in table 'command_parsers'")
         elif (
             db(db.devices.commands.contains(db_rec.id)).count() == 0 and
-            db(db.results.command.belongs(db(db.commands.id == db_rec.id).select())).count() == 0
+            db(db.results.command.belongs(db(db.commands.id == db_rec.id).select())).count() == 0 and
+            db(db.command_parsers.command.belongs(db(db.commands.id == db_rec.id).select())).count() == 0
         ):
             db(db.devices.id == db_rec.id).delete()
             db.commit()
