@@ -123,10 +123,7 @@ class ResultsReview():
             self.report = cur_diff + pre_diff
             self.reviewed = True
             self.reviewed_at = self.current_result.get_timestamp()
-            if not self.report:
-                self.review_status = 'Success'
-            else:
-                self.review_status = 'Failed'
+            self.review_status = 'Failed'
         elif (cur_res and isinstance(cur_res, list)) and (pre_res and isinstance(pre_res, dict)):
             pass
     
