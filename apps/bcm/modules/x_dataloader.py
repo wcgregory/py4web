@@ -106,6 +106,14 @@ RESULTS = [
         "completed_at": '2024-09-01 10:28:14',
         "status": "Success",
         "result": "Sample data, for example, eos 4.30.5M",
+    },
+    {
+        "device": 4,
+        "command": 2,
+        "completed_at": '2024-09-07 19:55:39',
+        "status": "Success",
+        "result": "{'TABLE_intf': {'ROW_intf': [{'vrf-name-out': 'default', 'intf-name': 'Vlan10', 'proto-state': 'down', 'link-state': 'down', 'admin-state': 'down', 'iod': '77', 'prefix': '192.168.1.1', 'ip-disabled': 'FALSE'}, {'vrf-name-out': 'default', 'intf-name': 'Vlan20', 'proto-state': 'down', 'link-state': 'down', 'admin-state': 'up', 'iod': '78', 'prefix': '192.168.2.1', 'ip-disabled': 'FALSE'}, {'vrf-name-out': 'default', 'intf-name': 'Vlan30', 'proto-state': 'down', 'link-state': 'down', 'admin-state': 'up', 'iod': '79', 'prefix': '192.168.3.1', 'ip-disabled': 'FALSE'}, {'vrf-name-out': 'default', 'intf-name': 'Vlan59', 'proto-state': 'down', 'link-state': 'down', 'admin-state': 'down', 'iod': '85', 'prefix': '192.168.59.1', 'ip-disabled': 'FALSE'}, {'vrf-name-out': 'default', 'intf-name': 'Lo1', 'proto-state': 'up', 'link-state': 'up', 'admin-state': 'up', 'iod': '73', 'prefix': '192.168.1.2', 'ip-disabled': 'FALSE'}, {'vrf-name-out': 'default', 'intf-name': 'Lo20', 'proto-state': 'down', 'link-state': 'down', 'admin-state': 'down', 'iod': '70', 'prefix': '10.20.30.1', 'ip-disabled': 'FALSE'}, {'vrf-name-out': 'default', 'intf-name': 'Lo59', 'proto-state': 'up', 'link-state': 'up', 'admin-state': 'up', 'iod': '84', 'prefix': '59.59.59.59', 'ip-disabled': 'FALSE'}, {'vrf-name-out': 'default', 'intf-name': 'Lo77', 'proto-state': 'up', 'link-state': 'up', 'admin-state': 'up', 'iod': '75', 'prefix': '10.77.77.1', 'ip-disabled': 'FALSE'}, {'vrf-name-out': 'default', 'intf-name': 'Eth1/59', 'proto-state': 'down', 'link-state': 'down', 'admin-state': 'down', 'iod': '63', 'prefix': '192.168.59.254', 'ip-disabled': 'FALSE'}]}}",
+        "comment": "Success @2024-09-07 19:55:39"
     }
 ]
 

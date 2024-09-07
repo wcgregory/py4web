@@ -23,6 +23,7 @@ class ResultsReview():
         self.device_os = None
         self.command = None
         self.output_parser = None
+        self.main_keys = None
         if current_result:
             self.current_result = self.load_result(result=current_result)
         if previous_result:
@@ -66,6 +67,7 @@ class ResultsReview():
                 return False
             else:
                 self.output_parser = parser.parser_path
+                self.main_keys = parser.main_keys
                 return True
     
     def results_comparison(self):
@@ -86,23 +88,46 @@ class ResultsReview():
             logging.warning(f"Need to add support when len > 2 for 'parser_path'")
             return False
         if cur_res == pre_res:
-            r = DBResult()
             self.reviewed = True
-            self.reviewed_at = DBResult.get_timestamp()
+            self.reviewed_at = self.current_result.get_timestamp()
             self.review_status = 'Success'
             self.report = None
-        if (cur_res and isinstance(cur_res, list)) and (pre_res and isinstance(pre_res, list)):
-            cur_diff = set(cur_res) - set(pre_res)
-            pre_diff = set(pre_res) - set(cur_res)
-            self.report = cur_diff + pre_diff
-            r = DBResult()
+        elif (cur_res and isinstance(cur_res, dict)) and (pre_res and isinstance(pre_res, dict)):
+            # add any dict differences from the results as a list of differences by key:value
+            self.report = list({(k, v) for (k, v) in pre_res.items() if k in cur_res and v == cur_res[k]})
+            self.report.extend({(k, v) for (k, v) in cur_res.items() if k in pre_res and v == pre_res[k]})
             self.reviewed = True
-            self.reviewed_at = DBResult.get_timestamp()
+            self.reviewed_at = self.current_result.get_timestamp()
+            self.review_status = 'Failed'
+        elif (cur_res and isinstance(cur_res, dict)) and (pre_res and isinstance(pre_res, list)):
+            self.report = list(cur_res)
+            self.report.extend(pre_res)
+            self.reviewed = True
+            self.reviewed_at = self.current_result.get_timestamp()
+            self.review_status = 'Failed'
+            """
+                if self.main_keys:
+                # create a searchable dict using the main keys to match each dict in list
+                dict_search = {k:v for k,v in cur_res.items() if k in self.main_keys}
+                for result in pre_res:
+                    res_match = {k:v for k,v in result.items() if k in self.main_keys}
+                    if dict_search == res_match and cur_res == result:
+                        self.reviewed = True
+                        self.reviewed_at = self.current_result.get_timestamp()
+                        self.review_status = 'Failed'
+                        self.report = None
+            """
+        elif (cur_res and isinstance(cur_res, list)) and (pre_res and isinstance(pre_res, list)):
+            cur_diff = list(set(cur_res) - set(pre_res))
+            pre_diff = list(set(pre_res) - set(cur_res))
+            self.report = cur_diff + pre_diff
+            self.reviewed = True
+            self.reviewed_at = self.current_result.get_timestamp()
             if not self.report:
                 self.review_status = 'Success'
             else:
                 self.review_status = 'Failed'
-        if cur_res and isinstance(cur_res, list):
+        elif (cur_res and isinstance(cur_res, list)) and (pre_res and isinstance(pre_res, dict)):
             pass
     
     def from_json(self, json_data):

@@ -53,6 +53,7 @@ db.define_table(
     Field('device_os', 'string', notnull=True),
     Field('is_json', 'boolean'),
     Field('parser_path', 'list:string', notnull=True),
+    Field('main_keys', 'list:string'),
     Field('name', 'string'),
     Field('created_at', 'datetime', notnull=True),
     Field('modified_on', 'datetime'),
