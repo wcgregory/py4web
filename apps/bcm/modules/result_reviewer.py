@@ -60,8 +60,13 @@ class ResultsReview():
             query = db(db.command_parsers.vendor == self.device) & (
                 db(db.command_parsers.device_os == self.device_os))
             query &= db(db.command_parsers.command == self.command)
-            parser = db(query).select()
-            #parsers = DBParser(db_id=)
+            parser = db(query).select().first()
+            if not parser:
+                logging.warning(f"No parsers available")
+                return False
+            else:
+                self.output_parser = parser.parser_path
+                return True
     
     def results_comparison(self):
         """
@@ -69,14 +74,36 @@ class ResultsReview():
         """
         if not self.current_result or not self.previous_result:
             raise ValueError(self.__class__.__name__, f"Missing 'results' for comparison")  
-
-        #if self.device == 'Cisco' and self.device_os == 'nxos':
-        #    parser = CiscoNXOSParser()
-        #    parser.add_command_parser()
-        #    # 'TABLE_intf': {'ROW_intf': []
-        #self.review_status = 'Running'
-        #cur_res = None
-        #pre_res = None
+        if not self.output_parser:
+            self.get_output_parser()
+        if len(self.output_parser) == 1:
+            cur_res = self.current_result.result[self.output_parser[0]]
+            pre_res = self.current_result.result[self.output_parser[0]]
+        elif len(self.output_parser) == 2:
+            cur_res = self.current_result.result[self.output_parser[0]][self.output_parser[1]]
+            pre_res = self.current_result.result[self.output_parser[0]][self.output_parser[1]]
+        else:
+            logging.warning(f"Need to add support when len > 2 for 'parser_path'")
+            return False
+        if cur_res == pre_res:
+            r = DBResult()
+            self.reviewed = True
+            self.reviewed_at = DBResult.get_timestamp()
+            self.review_status = 'Success'
+            self.report = None
+        if (cur_res and isinstance(cur_res, list)) and (pre_res and isinstance(pre_res, list)):
+            cur_diff = set(cur_res) - set(pre_res)
+            pre_diff = set(pre_res) - set(cur_res)
+            self.report = cur_diff + pre_diff
+            r = DBResult()
+            self.reviewed = True
+            self.reviewed_at = DBResult.get_timestamp()
+            if not self.report:
+                self.review_status = 'Success'
+            else:
+                self.review_status = 'Failed'
+        if cur_res and isinstance(cur_res, list):
+            pass
     
     def from_json(self, json_data):
         """
