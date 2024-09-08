@@ -1,14 +1,34 @@
 # coding: utf-8
 
 import logging
+import json
 
 from pydal.objects import Row
 
 from ..models import db
 from .devices import DBDevice
+from .commands import DBCommand
 from .results import DBResult
 from .command_parsers import DBParser
 #from .device_parsers import CiscoNXOSParser
+
+"""
+>>> from apps.bcm.modules.result_reviewer import ResultsReview
+>>> myreview = ResultsReview(22, 17)
+>>> myreview.load_device()
+>>> myreview.load_command()
+>>> myreview.get_output_parser()
+True
+>>> myreview.results_comparison()
+>>> myreview.report
+>>> myreview.reviewed
+True
+>>> myreview.review_status
+'Success'
+>>> myreview.reviewed_at
+'2024-09-08 21:51:58'
+
+"""
 
 
 class ResultsReview():
@@ -22,63 +42,114 @@ class ResultsReview():
         self.device = None
         self.command = None
         self.output_parser = None
-        #self.main_keys = None
-        if current_result:
-            self.current_result = self.load_result(result=current_result)
-        if previous_result:
-            self.previous_result = self.load_result(result=previous_result)
+        self.current_result = DBResult(db_id=current_result)
+        self.previous_result = DBResult(db_id=previous_result)
         self.reviewed = bool()
         self.reviewed_at = None
         self.review_status = None
         self.report = None
         self.comment = None
     
-    def load_result(self, result):
-        """Create object, load and return the 'result' object or None"""
+    def load_result(self, result, current=True):
+        """Create object and load the 'result' object or None"""
         if isinstance(result, int):
-            result = DBResult(db_id=result)
+            res = DBResult(db_id=result)
         elif isinstance(result, Row):
-            result = DBResult()
-            result.load_by_id(db_rec=result)
+            res = DBResult()
+            res.load_by_id(db_rec=result)
         if not result:
-            raise TypeError(self.__class__.__name__, f"Expected 'result' class, received {type(result)}")
-        if self.device and self.device != result.device:
-            raise ValueError(self.__class__.__name__, f"Device mismatch id={result.device} and id={self.device}")  
-        if self.command and result.command != self.command:
-            raise ValueError(self.__class__.__name__, f"Command mismatch id={result.command} and id={self.command}")
-        self.device = result.device
-        self.command = result.command
-        return result
+            logging.warning(f"Expected 'result' object, received {type(result)}")
+            return None
+        if current:
+            self.current_result = res
+            logging.warning("Created and loaded a 'result' object as 'current_result'")
+            self.device = self.load_device(device=self.current_result.device)
+            self.command = self.load_command(command=self.current_result.command)
+        else:
+            if self.device and self.device.id != res.device:
+                raise ValueError(self.__class__.__name__,
+                    f"Device mismatch 'result' device id={res.device} and 'device' id={self.device.id}")
+            if self.command and self.command.id != res.command:
+                raise ValueError(self.__class__.__name__,
+                    f"Command mismatch 'result' command id={res.command} and 'command' id={self.command.id}")
+            self.previous_result = res
+            logging.warning("Created and loaded a 'result' object as 'previous_result'")
+
+    def load_device(self):
+        """Create 'device' object and load details"""
+        if (
+            self.current_result and self.previous_result and 
+            self.current_result.device == self.previous_result.device
+        ):
+            self.device = DBDevice(db_id=self.current_result.device)
+        else:
+            # catch-all error
+            logging.warning("Unknown Error, more information/debugging required")
+            self.device = None
+
+    def load_command(self):
+        """Create 'command' object and load details"""
+        if (
+            self.current_result and self.previous_result and 
+            self.current_result.command == self.previous_result.command
+        ):
+            self.command = DBCommand(db_id=self.current_result.command)
+        else:
+            # catch-all error
+            logging.warning("Unknown Error, more information/debugging required")
+            self.command = None
     
+    """
     def load_device(self, device):
-        """Create object and load the 'device' object or None"""
+        #Create object and load the 'device' object or None
         if isinstance(device, int):
-            device = DBDevice(db_id=device)
+            dev = DBDevice(db_id=device)
         elif isinstance(device, Row):
-            device = DBDevice()
-            device.load_by_id(db_rec=device)
+            dev = DBDevice()
+            dev.load_by_id(db_rec=device)
         if not device:
-            raise TypeError(self.__class__.__name__, f"Expected 'device' class, received {type(device)}")
-        if device and isinstance(device, DBDevice):
+            logging.warning(f"Expected 'device' object, received {type(device)}")
+            return None
+        if dev and isinstance(dev, DBDevice):
+            self.device = dev
             logging.warning("Created and loaded a 'device' object for 'results_reviewer'")
-            self.device = device
         else:
             # catch-all error
             logging.warning("Unknown Error, more information/debugging required")
             self.device = None
     
+    def load_command(self, command):
+        #Create object and load the 'command' object or None
+        if isinstance(command, int):
+            command = DBCommand(db_id=command)
+        elif isinstance(command, Row):
+            command = DBCommand()
+            command.load_by_id(db_rec=command)
+        if not command:
+            logging.warning(f"Expected 'command' object, received {type(command)}")
+            return None
+        if command and isinstance(command, DBCommand):
+            logging.warning("Created and loaded a 'command' object for 'results_reviewer'")
+            self.command = command
+        else:
+            # catch-all error
+            logging.warning("Unknown Error, more information/debugging required")
+            self.command = None
+    """
+
     def get_output_parser(self):
+        """Create object and load the 'command_parser' object or None"""
         if self.device and self.command:
-            query = db(db.command_parsers.vendor == self.device) & (
-                db(db.command_parsers.device_os == self.device.os))
-            query &= db(db.command_parsers.command == self.command)
+            # search DB table 'command_parsers' matching by 'vendor', 'os' and 'command'
+            query = (db.command_parsers.vendor == self.device.vendor) & (
+                db.command_parsers.device_os == self.device.os)
+            query &= (db.command_parsers.command == self.command.db_id)
             parser = db(query).select().first()
             if not parser:
                 logging.warning(f"No parsers available")
                 return False
             else:
                 self.output_parser = DBParser(db_id=parser.id)
-                #self.main_keys = parser.main_keys
                 return True
     
     def results_comparison(self):
@@ -89,15 +160,17 @@ class ResultsReview():
             raise ValueError(self.__class__.__name__, "Missing 'results' for comparison")  
         if not self.output_parser:
             self.get_output_parser()
-        if not self.output_parser and isinstance(self.output_parser, DBParser):
+        if not self.output_parser or not isinstance(self.output_parser, DBParser):
             raise TypeError(self.__class__.__name__, f"Expecting DBParser received {type(self.output_parser)}")  
         output_datapath = self.output_parser.parser_path
+        cur_res_json = json.loads(self.current_result.result.replace("'", "\""))
+        pre_res_json = json.loads(self.previous_result.result.replace("'", "\""))
         if len(output_datapath) == 1:
-            cur_res = self.current_result.result[output_datapath[0]]
-            pre_res = self.current_result.result[output_datapath[0]]
+            cur_res = cur_res_json[output_datapath[0]]
+            pre_res = pre_res_json[output_datapath[0]]
         elif len(output_datapath) == 2:
-            cur_res = self.current_result.result[output_datapath[0]][output_datapath[1]]
-            pre_res = self.current_result.result[output_datapath[0]][output_datapath[1]]
+            cur_res = cur_res_json[output_datapath[0]][output_datapath[1]]
+            pre_res = pre_res_json[output_datapath[0]][output_datapath[1]]
         else:
             logging.warning(f"Need to add support when len > 2 for 'parser_path'")
             return False

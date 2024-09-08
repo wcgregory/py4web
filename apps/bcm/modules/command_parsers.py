@@ -47,7 +47,7 @@ class DBParser(BCMDb):
                 rec_id = db_id
             if not rec_id:
                 raise ValueError(self.__class__.__name__, "Invalid or missing record id")
-            db_rec = db(db.commands.id == rec_id).select().first()    
+            db_rec = db(db.command_parsers.id == rec_id).select().first()    
         if not db_rec:
             raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
         self.db_id = db_rec.id
@@ -77,7 +77,7 @@ class DBParser(BCMDb):
                 rec_id = db_id
             if not rec_id:
                 raise ValueError(self.__class__.__name__, "Invalid or missing record id")
-            db_rec = db(db.commands.id == rec_id).select().first()    
+            db_rec = db(db.command_parsers.id == rec_id).select().first()    
         if not db_rec:
             raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
         
