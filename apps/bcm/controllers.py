@@ -34,8 +34,9 @@ from .controllers.device_manager import DeviceManager
 
 
 @action('index')
+@action.uses("index.html")
 def index():
-    return f"Hello World @ {datetime.now()}"
+    return dict(message=f"Hello World @ {datetime.now()}")
 
 """
 @action("index")

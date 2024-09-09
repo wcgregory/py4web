@@ -26,10 +26,13 @@ from .controllers.device_manager import DeviceManager
 
 
 @action('index')
+@action.uses("index.html")
 def index():
-    return f"Hello World @ {datetime.now()}"
+    return dict(message=f"Hello World @ {datetime.now()}")
 
 @action('devices')
+@action.uses("devices.html")
 def devices():
     devices = DeviceManager().get_devices()
-    return devices
+    return dict(devices=devices)
+    #return devices

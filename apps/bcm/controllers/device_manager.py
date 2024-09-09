@@ -91,7 +91,7 @@ class DeviceManager():
         :return commands: list containing a subset of the 'commands' object (key=DB id value=syntax)
         :rtype commands: list
         """
-        commands = [{cmd.db_id: cmd.syntax for cmd in self.commands}]
+        commands = {cmd.db_id: cmd.syntax for cmd in self.commands}
         return commands
     
     def results_to_json(self):
@@ -101,7 +101,7 @@ class DeviceManager():
         :return results: list conatining the full dataset of results in dict format
         :rtype results: list
         """
-        results = [{result.db_id: result.to_json() for result in self.results}]
+        results = {result.db_id: result.to_json() for result in self.results}
         return results
     
     def to_json(self):
@@ -110,9 +110,9 @@ class DeviceManager():
         ---
         :return: class attributes as dict
         """
-        device = {self.device.db_id: self.device.to_json()}
+        device = self.device.to_json()
         commands = self.commands_to_json()
         results = self.results_to_json()
-        device[self.device.db_id].update({'commands': commands})  #update 'commands' using commands_to_json
-        device[self.device.db_id].update({'results': results})
+        device.update({'commands': commands})  #overwrite 'commands' entry
+        device.update({'results': results})
         return device

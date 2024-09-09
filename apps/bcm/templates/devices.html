@@ -1,0 +1,28 @@
+[[extend 'layout.html']]
+
+<div class="section">
+  <div class="vars">
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Commands</th>
+          <th>Result IDs</th>
+        </tr>
+        [[for device in devices:]]
+        <tr>
+          <td>[[=device['id']]]</td>
+          <td>[[=device['name']]]</td>
+          <td>[[=device['device_roles'][0]]]</td>
+          <td>
+          [[for command in device['commands']:]]
+            <div>[[=command]]:[[=device['commands'][command]]]</div>
+          [[pass]]
+          </td>
+          <td>[[=list(device['results'].keys())]]</td>
+        </tr>
+        [[pass]]
+      </table>
+  </div>
+</div>
