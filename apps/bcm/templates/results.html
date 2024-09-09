@@ -1,0 +1,26 @@
+[[extend 'layout.html']]
+
+<div class="section">
+  <h5>Results List</h5>
+  <div class="vars">
+      <table>
+        <tr>
+          <th>Device ID</th>
+          <th>Result ID</th>
+          <th>Command ID</th>
+          <th>Status</th>
+          <th>Result</th>
+        </tr>
+        [[for device in results:]]
+        <tr>
+          <td>[[=device]]</td>
+          <td>
+          [[for result in results[device]:]]
+            [[=result]]
+          [[pass]]
+          </td>
+        </tr>
+        [[pass]]
+      </table>
+  </div>
+</div>

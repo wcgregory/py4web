@@ -30,34 +30,22 @@ from datetime import datetime
 from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
 from .common import (db, session, T, cache, auth, logger, authenticated, unauthenticated, flash,)
-from .controllers.device_manager import DeviceManager
-
+from .modules.device_manager import DeviceManager
+from .modules.result_reviewer import ResultsReview
 
 @action('index')
 @action.uses("index.html")
 def index():
     return dict(message=f"Hello World @ {datetime.now()}")
 
-"""
-@action("index")
-@action.uses("index.html", auth, T)
-def index():
-    user = auth.get_user()
-    message = T("Hello {first_name}").format(**user) if user else T("Hello")
-    return dict(message=message)
-
-@action("like/<item_id:int>", method=["POST"])
-@action.uses(auth.user)
-def like(item_id):
-    # try unlike
-    if db(db.item_like.item_id == item_id).delete():
-        return dict(liked=False)
-    # else like
-    db.item_like.insert(item_id=item_id)
-    return dict(liked=True)
-"""
-
-@action('devices')
+@action("devices")
+@action.uses("devices.html")
 def devices():
     devices = DeviceManager().get_devices()
-    return devices
+    return dict(devices=devices)
+
+@action('results')
+@action.uses("results.html")
+def results():
+    results = ResultsReview().get_results()
+    return dict(results=results)

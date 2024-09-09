@@ -6,7 +6,9 @@ databases/
 .sqlite
 !apps/wcg
 !apps/bcm
+!apps/nav
 apps/wcg/_scaffold
 apps/bcm/_scaffold
+apps/nav/_scaffold
 password.txt
 .service/

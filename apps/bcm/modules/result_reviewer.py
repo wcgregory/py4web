@@ -10,7 +10,6 @@ from .devices import DBDevice
 from .commands import DBCommand
 from .results import DBResult
 from .command_parsers import DBParser
-#from .device_parsers import CiscoNXOSParser
 
 """
 >>> from apps.bcm.modules.result_reviewer import ResultsReview
@@ -33,7 +32,7 @@ True
 
 class ResultsReview():
     """
-    Abstraction class for uniform interaction for reviewing and comparing db results
+    Mediator class to control 'result' object interactions
     """
     def __init__(self, current_result=None, previous_result=None):
         """
@@ -49,6 +48,30 @@ class ResultsReview():
         self.review_status = None
         self.report = None
         self.comment = None
+    
+    @classmethod
+    def get_results(cls, device=None):
+        results_by_device = dict()
+        if not device:
+            results = db().select(db.results.ALL, orderby=db.results.device)
+        else:
+            if isinstance(device, int):
+                results = db(db.results.device == device).select()
+                results_by_device[device] = dict()
+            if isinstance(device, str):
+                dev = db((db.devices.mgmt_ip == device) | (db.devices.name == device)).select().first()
+                results = db(db.results.device == dev.id).select()
+                results_by_device[dev.id] = dict()
+        #results_list = list()
+        for res in results:
+            r = DBResult(db_id=res.id)
+            if not r.device in results_by_device.keys():
+                results_by_device = {r.device: {res.id: r.to_json()}}
+            else:
+                results_by_device[r.device].update({res.id: r.to_json()})
+        #results_list.append(results_by_device)
+        return results_by_device
+        #return results_list
     
     def load_result(self, result, current=True):
         """Create object and load the 'result' object or None"""

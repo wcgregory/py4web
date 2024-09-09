@@ -16,23 +16,7 @@ __version__ = "0.0.0"
 __author__ = "you <you@example.com>"
 __license__ = "anything you want"
 """
-from datetime import datetime
-from py4web import action
 
-#from .models import db
+import py4web
 
-#from . import controllers
-from .controllers.device_manager import DeviceManager
-
-
-@action('index')
-@action.uses("index.html")
-def index():
-    return dict(message=f"Hello World @ {datetime.now()}")
-
-@action('devices')
-@action.uses("devices.html")
-def devices():
-    devices = DeviceManager().get_devices()
-    return dict(devices=devices)
-    #return devices
+from . import controllers
