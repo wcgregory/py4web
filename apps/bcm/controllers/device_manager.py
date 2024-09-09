@@ -20,6 +20,17 @@ class DeviceManager():
         """
         Standard constructor class
         """
+        pass
+
+
+class Device():
+    """
+    Mediator class to control 'device' object interactions
+    """
+    def __init__(self, device=None):
+        """
+        Standard constructor class
+        """
         self.device = device
         self.commands = None
         self.num_commands = None
