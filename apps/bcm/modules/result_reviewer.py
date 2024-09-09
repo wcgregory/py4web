@@ -191,7 +191,7 @@ class ResultsReview():
         #elif (cur_res and isinstance(cur_res, dict)) and (pre_res and isinstance(pre_res, list)):
         elif isinstance(cur_res, dict) and isinstance(pre_res, list):
             # add all differences due to result type mismatch
-            self.report = {"last_report": pre_res, "current_report": list(cur_res)}
+            self.report = {"last_report": pre_res, "current_report": cur_res}
             self.reviewed = True
             self.reviewed_at = self.current_result.get_timestamp()
             self.review_status = 'Failed'
@@ -210,7 +210,7 @@ class ResultsReview():
         #elif (cur_res and isinstance(cur_res, list)) and (pre_res and isinstance(pre_res, dict)):
         elif isinstance(cur_res, list) and pre_res and isinstance(pre_res, dict):
             # add all differences due to result type mismatch
-            self.report = {"last_report": list(pre_res), "current_report": cur_res}
+            self.report = {"last_report": pre_res, "current_report": cur_res}
             self.reviewed = True
             self.reviewed_at = self.current_result.get_timestamp()
             self.review_status = 'Failed'
