@@ -29,17 +29,9 @@ from datetime import datetime
 
 from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
-from .common import (
-    db,
-    session,
-    T,
-    cache,
-    auth,
-    logger,
-    authenticated,
-    unauthenticated,
-    flash,
-)
+from .common import (db, session, T, cache, auth, logger, authenticated, unauthenticated, flash,)
+from .controllers.device_manager import DeviceManager
+
 
 @action('index')
 def index():
@@ -52,4 +44,19 @@ def index():
     user = auth.get_user()
     message = T("Hello {first_name}").format(**user) if user else T("Hello")
     return dict(message=message)
+
+@action("like/<item_id:int>", method=["POST"])
+@action.uses(auth.user)
+def like(item_id):
+    # try unlike
+    if db(db.item_like.item_id == item_id).delete():
+        return dict(liked=False)
+    # else like
+    db.item_like.insert(item_id=item_id)
+    return dict(liked=True)
 """
+
+@action('devices')
+def devices():
+    devices = DeviceManager().get_devices()
+    return devices

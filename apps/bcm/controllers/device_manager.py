@@ -12,18 +12,19 @@ from ..modules.results import DBResult
 from ..modules.command_parsers import DBParser
 
 
+"""      
+>>> from apps.bcm.controllers.device_manager import DeviceManager
+>>> dm = DeviceManager()
+>>> dm.load(4)
+>>> dm.num_commands
+2
+>>> dm.num_results
+11
+>>> dm.to_json()
+"""
+
+
 class DeviceManager():
-    """
-    Mediator class to control 'device' object interactions
-    """
-    def __init__(self, device=None):
-        """
-        Standard constructor class
-        """
-        pass
-
-
-class Device():
     """
     Mediator class to control 'device' object interactions
     """
@@ -36,7 +37,22 @@ class Device():
         self.num_commands = None
         self.results = None
         self.num_results = None
-
+    
+    @classmethod
+    def get_devices(cls, device=None):
+        if not device:
+            devices = db(db.devices).select()
+        else:
+            if isinstance(device, int):
+                devices = db(db.devices.id == device).select()
+            if isinstance(device, str):
+                devices = db((db.devices.mgmt_ip == device) | (db.devices.name == device)).select().first()
+        device_list = list()
+        for dev in devices:
+            dm = DeviceManager()
+            dm.load(dev.id)
+            device_list.append(dm.to_json())
+        return device_list
     
     def load(self, device):
         """Create 'device' object and load the related objects"""
@@ -94,9 +110,9 @@ class Device():
         ---
         :return: class attributes as dict
         """
-        device = self.device.to_json()
+        device = {self.device.db_id: self.device.to_json()}
         commands = self.commands_to_json()
         results = self.results_to_json()
-        device.update({'commands': commands})  #update 'commands' using commands_to_json
-        device.update({'results': results})
+        device[self.device.db_id].update({'commands': commands})  #update 'commands' using commands_to_json
+        device[self.device.db_id].update({'results': results})
         return device

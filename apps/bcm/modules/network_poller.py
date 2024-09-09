@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime
+import json
 
 from ..models import db
 from .bcm_db import BCMDb
@@ -40,15 +41,17 @@ class NetworkPoller():
                     "device": self.device.db_id, "command": cmd_id
                 }})
                 if self.device.os == 'ios':
-                    result = d.send_op_command(self.commands[cmd_id], use_textfsm=True)
+                    res = d.send_op_command(self.commands[cmd_id], use_textfsm=True)
+                    result = json.dumps(res)
                 else:
-                    result = d.send_op_command_json(self.commands[cmd_id])
+                    res = d.send_op_command_json(self.commands[cmd_id])
+                    result = json.dumps(res)
                 result_time = self.device.get_timestamp()
                 self.response[cmd_ref].update({"completed_at": result_time})
                 if result:
                     result_status = 'Success'
                 else:
-                    result = 'Failure'
+                    result = {"Failure" : self.commands[cmd_id]}
                     result_status = result
                 self.response[cmd_ref].update({"status": f"{result_status}",
                     "result": result, "comment": f"{result_status} @{result_time}"
