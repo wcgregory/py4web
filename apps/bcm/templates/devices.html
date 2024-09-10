@@ -9,7 +9,7 @@
           <th>Name</th>
           <th>Role</th>
           <th>Commands</th>
-          <th>Result IDs</th>
+          <th>Results</th>
         </tr>
         [[for device in devices:]]
         <tr>
@@ -21,7 +21,9 @@
             <div>[[=command]]:[[=device['commands'][command]]]</div>
           [[pass]]
           </td>
-          <td>[[=list(device['results'].keys())]]</td>
+          <td>
+            <a href="[[=URL('devices', device['id'], 'results')]]">[[=list(device['results'].keys())]]</a>
+          </td>
         </tr>
         [[pass]]
       </table>

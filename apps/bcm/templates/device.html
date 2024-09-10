@@ -8,8 +8,8 @@
       <li>Device ID: [[=device['id']]] | Management IP: [[=device['mgmt_ip']]]</li>
       <li>Vendor: [[=device['vendor']]] | OS: [[=device['os']]]</li>
       <li>Listed Commands: [[=device['commands'] if device['commands'] else None]]</li>
-      <li>Last Result:
-        [[cmd = device['last_result']['command']]]
+      [[cmd = device['last_result']['command']]]
+      <li>Last Result: Completed At: [[=device['last_result']['completed_at']]]
         <div>From command: [[=device['commands'][cmd] if device['commands'] else None]]</div>
         <div>Status: [[=device['last_result']['status']]]</div>
         <div>Full Output:</div>
@@ -17,6 +17,6 @@
       </li>
       <li><a href="[[=URL('devices', device['id'], 'results')]]">View All Results</a></li>
     </ul>
-    <button type="button" class="btn btn-primary">Re-run</button>
+    <button type="button" class="btn btn-primary">Run Commands</button>
   </div>
 </div>

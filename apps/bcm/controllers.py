@@ -24,14 +24,15 @@ The path follows the bottlepy syntax.
 session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
-
+import os
 from datetime import datetime
 
 from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
-from .common import (db, session, T, cache, auth, logger, authenticated, unauthenticated, flash,)
+from .common import (db, session, T, cache, auth, logger, authenticated, unauthenticated, flash)
 from .modules.device_manager import DeviceManager
 from .modules.result_reviewer import ResultsReview
+from .modules.network_poller import NetworkPoller
 
 @action('index')
 @action.uses("index.html")
@@ -44,9 +45,9 @@ def devices():
     devices = DeviceManager().get_devices()
     return dict(devices=devices)
 
-@action("devices/<device_id:int>")
+@action("devices/<device_id:int>", method=["GET", "POST"])
 @action.uses("device.html")
-def devices(device_id):
+def device(device_id):
     device = DeviceManager().get_devices(device=device_id)[0]
     last_res = list(device['results'])
     last_res.sort()
@@ -65,3 +66,25 @@ def device_results(device_id):
 def results():
     results = ResultsReview().get_results()
     return dict(results=results)
+
+"""
+@unauthenticated.callback("click me")
+def a_callback(msg):
+    logging.info(msg)
+
+
+@unauthenticated.get()
+def show_a_button():
+    return dict(mybutton=a_callback.button("clickme")(msg="hello world"))
+"""
+
+@action('run_commands')
+def run_commands(device):
+    if device == 3:
+        user_creds = (os.getenv('IOSUSER'), os.getenv('IOSPASS'))
+    if device == 4:
+        user_creds = (os.getenv('NXOSUSER'), os.getenv('NXOSPASS'))
+    device = NetworkPoller(device_id=device)
+    device.load_device_commands()
+    device.run_device_commands(auth=user_creds)
+    device.save_results()
