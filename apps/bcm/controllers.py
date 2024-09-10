@@ -53,6 +53,13 @@ def devices(device_id):
     device.update({"last_result": device['results'][last_res[-1]]})
     return dict(device=device)
 
+@action("devices/<device_id:int>/results")
+@action.uses("device_results.html")
+def device_results(device_id):
+    results = ResultsReview().get_results(device=device_id)
+    results_list = [results[device_id][result] for result in results[device_id]]
+    return dict(results=results_list)
+
 @action('results')
 @action.uses("results.html")
 def results():

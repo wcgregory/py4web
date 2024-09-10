@@ -1,0 +1,27 @@
+[[extend 'layout.html']]
+<link rel="stylesheet" href="css/style.css">
+
+
+<div class="section">
+  <h5>Device: [[=results[0]['device_name']]]</h5>
+  <div class="vars">
+    <table>
+      <tr>
+        <th>Result ID</th>
+        <th>Command</th>
+        <th>Last ran</th>
+        <th>Status</th>
+        <th>Result</th>
+      </tr>
+      [[for result in results:]]
+      <tr>
+        <td>[[=result['id']]]</td>
+        <td>[[=result['command_name']]]</td>
+        <td>[[=result['completed_at']]]</td>
+        <td>[[=result['status']]]</td>
+        <td>[[=result['result']]]</td>
+      </tr>
+      [[pass]]
+    </table>
+  </div>
+</div>

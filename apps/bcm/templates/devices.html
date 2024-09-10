@@ -13,8 +13,8 @@
         </tr>
         [[for device in devices:]]
         <tr>
-          <td>[[=device['id']]]</td>
-          <td>[[=device['name']]]</td>
+          <td><a href="[[=URL('devices', device['id'])]]">[[=device['id']]]</a></td>
+          <td><a href="[[=URL('devices', device['id'])]]">[[=device['name']]]</a></td>
           <td>[[=device['device_roles'][0]]]</td>
           <td>
           [[for command in device['commands']:]]
