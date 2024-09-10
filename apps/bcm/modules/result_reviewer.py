@@ -62,16 +62,17 @@ class ResultsReview():
                 dev = db((db.devices.mgmt_ip == device) | (db.devices.name == device)).select().first()
                 results = db(db.results.device == dev.id).select()
                 results_by_device[dev.id] = dict()
-        #results_list = list()
         for res in results:
             r = DBResult(db_id=res.id)
+            d = DBDevice(db_id=r.device)
+            c = DBCommand(db_id=r.command)
             if not r.device in results_by_device.keys():
-                results_by_device = {r.device: {res.id: r.to_json()}}
+                results_by_device.update({r.device: {res.id: r.to_json()}})
             else:
                 results_by_device[r.device].update({res.id: r.to_json()})
-        #results_list.append(results_by_device)
+            results_by_device[r.device][res.id].update({"device_name": d.name})
+            results_by_device[r.device][res.id].update({"command_name": c.syntax})
         return results_by_device
-        #return results_list
     
     def load_result(self, result, current=True):
         """Create object and load the 'result' object or None"""

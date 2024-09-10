@@ -341,4 +341,5 @@ class DBCommand(BCMDb):
         """
         return dict(id=self.db_id, syntax=self.syntax, vendors=self.vendors,
             device_functions=self.device_functions, device_roles=self.device_roles,
-            comment=self.comment, created_at=self.created_at, modified_on=self.modified_on)
+            comment=self.comment, created_at=self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            modified_on=self.modified_on.strftime("%Y-%m-%d %H:%M:%S"))

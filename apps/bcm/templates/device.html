@@ -1,0 +1,20 @@
+[[extend 'layout.html']]
+<link rel="stylesheet" href="css/style.css">
+
+<div class="section">
+  <h5>Device: [[=device['name']]]</h5>
+  <div class="vars">
+    <ul>
+      <li>Device ID: [[=device['id']]] | Management IP: [[=device['mgmt_ip']]]</li>
+      <li>Vendor: [[=device['vendor']]] | OS: [[=device['os']]]</li>
+      <li>Listed Commands: [[=device['commands'] if device['commands'] else None]]</li>
+      <li>Last Result:
+        [[cmd = device['last_result']['command']]]
+        <div>From command: [[=device['commands'][cmd] if device['commands'] else None]]</div>
+        <div>Status: [[=device['last_result']['status']]]</div>
+        <div>Full Output:</div>
+        <div>[[=device['last_result']['result']]]</div>
+      </li>
+    </ul>
+  </div>
+</div>

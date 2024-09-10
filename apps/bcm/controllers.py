@@ -44,6 +44,15 @@ def devices():
     devices = DeviceManager().get_devices()
     return dict(devices=devices)
 
+@action("devices/<device_id:int>")
+@action.uses("device.html")
+def devices(device_id):
+    device = DeviceManager().get_devices(device=device_id)[0]
+    last_res = list(device['results'])
+    last_res.sort()
+    device.update({"last_result": device['results'][last_res[-1]]})
+    return dict(device=device)
+
 @action('results')
 @action.uses("results.html")
 def results():

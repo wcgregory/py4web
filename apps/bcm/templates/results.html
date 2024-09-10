@@ -5,20 +5,23 @@
   <div class="vars">
       <table>
         <tr>
-          <th>Device ID</th>
+          <th>Device</th>
           <th>Result ID</th>
-          <th>Command ID</th>
+          <th>Command</th>
+          <th>Last ran</th>
           <th>Status</th>
           <th>Result</th>
         </tr>
         [[for device in results:]]
-        <tr>
-          <td>[[=device]]</td>
-          <td>
           [[for result in results[device]:]]
-            [[=result]]
+        <tr>
+          <td>[[=results[device][result]['device_name']]]</td>
+          <td>[[=results[device][result]['id']]]</td>
+          <td>[[=results[device][result]['command_name']]]</td>
+          <td>[[=results[device][result]['completed_at']]]</td>
+          <td>[[=results[device][result]['status']]]</td>
+          <td>[[=results[device][result]['result']]]</td>
           [[pass]]
-          </td>
         </tr>
         [[pass]]
       </table>
