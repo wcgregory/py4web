@@ -1,35 +1,14 @@
-"""
-This file defines actions, i.e. functions the URLs are mapped into
-The @action(path) decorator exposed the function at URL:
+# coding: utf-8
 
-    http://127.0.0.1:8000/{app_name}/{path}
-
-If app_name == '_default' then simply
-
-    http://127.0.0.1:8000/{path}
-
-If path == 'index' it can be omitted:
-
-    http://127.0.0.1:8000/
-
-The path follows the bottlepy syntax.
-
-@action.uses('generic.html')  indicates that the action uses the generic.html template
-@action.uses(session)         indicates that the action uses the session
-@action.uses(db)              indicates that the action uses the db
-@action.uses(T)               indicates that the action uses the i18n & pluralization
-@action.uses(auth.user)       indicates that the action requires a logged in user
-@action.uses(auth)            indicates that the action requires the auth object
-
-session, db, T, auth, and tempates are examples of Fixtures.
-Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
-"""
 import os
 from datetime import datetime
 
 from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
-from .common import (db, session, T, cache, auth, logger, authenticated, unauthenticated, flash)
+from .common import (
+    db, session, T, cache, auth, logger,
+    authenticated, unauthenticated, flash
+)
 from .modules.device_manager import DeviceManager
 from .modules.result_reviewer import ResultsReview
 from .modules.network_poller import NetworkPoller
@@ -45,14 +24,15 @@ def devices():
     devices = DeviceManager().get_devices()
     return dict(devices=devices)
 
-@action("devices/<device_id:int>", method=["GET", "POST"])
+@action("devices/<device_id:int>")
 @action.uses("device.html")
 def device(device_id):
     device = DeviceManager().get_devices(device=device_id)[0]
     last_res = list(device['results'])
     last_res.sort()
     device.update({"last_result": device['results'][last_res[-1]]})
-    return dict(device=device)
+    url=URL("run_commands")
+    return dict(device=device, url=url)
 
 @action("devices/<device_id:int>/results")
 @action.uses("device_results.html")
@@ -67,24 +47,19 @@ def results():
     results = ResultsReview().get_results()
     return dict(results=results)
 
-"""
-@unauthenticated.callback("click me")
-def a_callback(msg):
-    logging.info(msg)
-
-
-@unauthenticated.get()
-def show_a_button():
-    return dict(mybutton=a_callback.button("clickme")(msg="hello world"))
-"""
-
-@action('run_commands')
-def run_commands(device):
-    if device == 3:
-        user_creds = (os.getenv('IOSUSER'), os.getenv('IOSPASS'))
-    if device == 4:
-        user_creds = (os.getenv('NXOSUSER'), os.getenv('NXOSPASS'))
-    device = NetworkPoller(device_id=device)
+@action("run_commands/<device_id:int>", method=["GET"])
+def run_commands(device_id):
+    """
+    export USERACC='admin'
+    export IOSPASS='C1sco12345'
+    export NXOSPASS='Admin_1234'
+    """
+    if device_id == 3:
+        user_creds = (os.getenv('USERACC'), os.getenv('IOSPASS'))
+    if device_id == 4:
+        user_creds = (os.getenv('USERACC'), os.getenv('NXOSPASS'))
+    device = NetworkPoller(device_id=device_id)
     device.load_device_commands()
     device.run_device_commands(auth=user_creds)
     device.save_results()
+    return dict()

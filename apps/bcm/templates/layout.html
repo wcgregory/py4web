@@ -16,7 +16,13 @@
         <!-- Logo -->
         <a href="[[=URL('index')]]">
           <!-- <b>py4web <script>document.write(window.location.href.split('/')[3]);</script></b> -->
-          <b><script>document.write(window.location.href.split('/')[3]);</script></b>
+          <b><script>document.write(window.location.href.split('/')[3].toUpperCase());</script></b>
+        </a>
+        <a href="[[=URL('devices')]]">
+          <b>[[=URL('devices').split("/")[-1].capitalize()]]</b>
+        </a>
+        <a href="[[=URL('results')]]">
+          <b>[[=URL('results').split("/")[-1].capitalize()]]</b>
         </a>
         <!-- Do not touch this -->
         <label for="hamburger">☰</label>
@@ -54,7 +60,7 @@
         <!-- Flash alert messages, first optional one in data-alert -->
         <flash-alerts class="padded" data-alert="[[=globals().get('flash','')]]"></flash-alerts>
       </div>
-      <main class="padded">
+      <main class="padded" id="vue-target">
         <!-- contect injected by extending page -->
         [[include]]
       </main>
@@ -68,5 +74,8 @@
   </body>
   <!-- You've gotta have utils.js -->
   <script src="js/utils.js"></script>
+  <script src="js/axios.min.js"></script>
+  <script src="js/vue.js"></script>
+  <script src="js/bcm.js"></script>
   [[block page_scripts]]<!-- individual pages can add scripts here -->[[end]]
 </html>
