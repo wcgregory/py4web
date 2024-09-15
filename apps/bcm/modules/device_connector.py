@@ -59,10 +59,10 @@ class NetConnect():
     def connect_to_device(self, auth=None):
         """Connect to the host device"""
         if self.is_connected:
-            logging.warning(self.__class__.__name__, "Already connected")
+            logging.warning(f"{self.__class__.__name__}, Already connected")
             return False
         if not self.username and not isinstance(auth, tuple):
-            logging.warning(self.__class__.__name__, "No login credentials set")
+            logging.warning(f"{self.__class__.__name__}, No login credentials set")
             return False
         elif auth and isinstance(auth, tuple):
             self.username = auth[0]
@@ -74,13 +74,13 @@ class NetConnect():
         try:
             self.connect = ConnectHandler(**device_params)
         except (NetmikoTimeoutException):
-            logging.warning(self.__class__.__name__, "No response, connection timed out!")
+            logging.warning(f"{self.__class__.__name__}, No response, connection timed out!")
         except (AuthenticationException):
-            logging.warning(self.__class__.__name__, "No login credentials set!")
+            logging.warning(f"{self.__class__.__name__}, No login credentials set!")
         except (SSHException):
-            logging.warning(self.__class__.__name__, "SSH issue!")
+            logging.warning(f"{self.__class__.__name__}, SSH issue!")
         except Exception as unknown_error:
-            logging.warning(self.__class__.__name__, "Unexpected error!")
+            logging.warning(f"{self.__class__.__name__}, Unexpected error!")
         if self.connect and self.connect.is_alive():
             self.is_connected = True
 

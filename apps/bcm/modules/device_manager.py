@@ -39,13 +39,25 @@ class DeviceManager():
         self.num_results = None
     
     @classmethod
-    def get_devices(cls, device=None):
-        if not device:
+    def get_devices(cls, device=None, roles=None):
+        """
+        Class method to retrieve 'devices' from DB Table 'devices'
+        Includes an optional parameter for a specific 'device' search and
+        an optional search for devices by 'device_role'
+        ---
+        :param device: search for a single device
+        :type device: int or str
+        :param roles: search for 'devices' by device_roles
+        :type roles: str
+        """
+        if not device and not roles:
             devices = db(db.devices).select()
-        else:
+        elif not device and roles and isinstance(roles, str):
+            devices = db(db.devices.device_roles == roles.upper()).select()
+        elif device:
             if isinstance(device, int):
                 devices = db(db.devices.id == device).select()
-            if isinstance(device, str):
+            elif isinstance(device, str):
                 devices = db((db.devices.mgmt_ip == device) | (db.devices.name == device)).select().first()
         device_list = list()
         for dev in devices:

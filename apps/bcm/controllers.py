@@ -63,3 +63,9 @@ def run_commands(device_id):
     device.run_device_commands(auth=user_creds)
     device.save_results()
     return dict()
+
+@action("roles/<device_roles>")
+@action.uses("devices_by_role.html")
+def devices_by_role(device_roles):
+    devices = DeviceManager().get_devices(roles=device_roles)
+    return dict(role=device_roles, devices=devices)
