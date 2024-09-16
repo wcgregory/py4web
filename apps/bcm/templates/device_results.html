@@ -1,6 +1,18 @@
 [[extend 'layout.html']]
 <link rel="stylesheet" href="css/style.css">
 
+[[command_set = set([res['command_name'] for res in results])]]
+[[command_list = sorted(list(command_set))]]
+<select name="select_command" class="form-select form-select-sm" aria-label="Select commands">
+  <option selected>Select a command to review</option>
+[[for cmd in command_list:]]
+  <option value="[[=cmd]]">[[=cmd]]</option>
+[[pass]]
+</select>
+
+<button
+  type="button" class="btn btn-primary" @click="bcm_button_compare_results()">Compare
+</button>
 
 <div class="section">
   <h5>Device: [[=results[0]['device_name']]]</h5>
@@ -29,6 +41,7 @@
         <th>Last ran</th>
         <th>Status</th>
         <th>Result</th>
+        <th>Comparison (check 2 boxes)</th>
       </tr>
       [[for result in results:]]
       <tr>
@@ -37,6 +50,14 @@
         <td>[[=result['completed_at']]]</td>
         <td>[[=result['status']]]</td>
         <td>[[=result['result']]]</td>
+        <td>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="[[=result['id']]]" id="flexCheckDefault">
+            <label class="form-check-label" for="flexCheckDefault">
+              <div>Select to compare</div>
+            </label>
+          </div>
+        </td>
       </tr>
       [[pass]]
     </table>
