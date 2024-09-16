@@ -1,7 +1,7 @@
 [[extend 'layout.html']]
 
 <div class="section">
-  <h5>Device List by [[=role]]</h5>
+  <h5>Device List by [[=dev_role]]</h5>
   <div class="vars">
       <table>
         <tr>
@@ -31,5 +31,5 @@
   <a href="[[=URL('devices')]]">Back to Devices</a>
 </div>
 <button
-  type="button" class="btn btn-primary" @click="bcm_button_run_cmds_role([[=role]])">Run Commands on All
+  type="button" class="btn btn-primary" @click="bcm_button_run_cmds_role('[[=dev_role]]')">Run Commands on All
 </button>

@@ -16,9 +16,9 @@
           <td><a href="[[=URL('devices', device['id'])]]">[[=device['id']]]</a></td>
           <td><a href="[[=URL('devices', device['id'])]]">[[=device['name']]]</a></td>
           <td>
-            [[for role in device['device_roles']:]]
-              <div><a href="[[=URL('roles', role)]]">[[=role]]</a></div>
-            [[pass]]
+          [[for role in device['device_roles']:]]
+            <div><a href="[[=URL('roles', role)]]">[[=role]]</a></div>
+          [[pass]]
           </td>
           <td>
           [[for command in device['commands']:]]

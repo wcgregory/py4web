@@ -71,22 +71,24 @@ def run_commands_by_role(device_role):
     #export IOSPASS='C1sco12345'
     #export NXOSPASS='Admin_1234'
     """
-    devices = db(db.devices.device_roles == device_role.upper()).select()
+    devices = DeviceManager().get_devices(roles=device_role)
     for device in devices:
-        if device.id == 3:
+        if device['id'] == 3:
             user_creds = (os.getenv('USERACC'), os.getenv('IOSPASS'))
-        #if device.id == 4:
+        #if device['id'] == 4:
         #    user_creds = (os.getenv('USERACC'), os.getenv('NXOSPASS'))
         else:
             continue
-        device = NetworkPoller(device_id=device.id)
+        device = NetworkPoller(device_id=device['id'])
         device.load_device_commands()
         device.run_device_commands(auth=user_creds)
         device.save_results()
+    redirect(URL(f"roles/{device_role}"))
     return dict()
 
 @action("roles/<device_role>")
 @action.uses("devices_by_role.html")
 def devices_by_role(device_role):
     devices = DeviceManager().get_devices(roles=device_role)
-    return dict(role=device_role, devices=devices)
+    url=URL("run_commands_by_role")
+    return dict(dev_role=device_role, devices=devices, url=url)
