@@ -21,7 +21,7 @@ def index():
 @action("devices")
 @action.uses("devices.html")
 def devices():
-    devices = DeviceManager().get_devices()
+    devices = DeviceManager().get_devices(max_results=10)
     return dict(devices=devices)
 
 @action("devices/<device_id:int>")
@@ -36,10 +36,19 @@ def device(device_id):
 
 @action("devices/<device_id:int>/results")
 @action.uses("device_results.html")
-def device_results(device_id):
+def device_results(device_id, limit=None):
     results = ResultsReview().get_results(device=device_id)
     results_list = [results[device_id][result] for result in results[device_id]]
-    return dict(results=results_list)
+    return dict(device_id=device_id, partial=limit, results=results_list)
+
+@action("devices/<device_id:int>/partialresults")
+@action.uses("device_results.html")
+def device_results(device_id, limit=10):
+    results = ResultsReview().get_results(device=device_id)
+    results_list = [results[device_id][result] for result in results[device_id]]
+    if limit and limit >= len(results):
+        results_list = results_list[-limit:]
+    return dict(device_id=device_id, partial=limit, results=results_list)
 
 @action('results')
 @action.uses("results.html")
@@ -66,11 +75,6 @@ def run_commands(device_id):
 
 @action("run_commands_by_role/<device_role>", method=["GET"])
 def run_commands_by_role(device_role):
-    """
-    #export USERACC='admin'
-    #export IOSPASS='C1sco12345'
-    #export NXOSPASS='Admin_1234'
-    """
     devices = DeviceManager().get_devices(roles=device_role)
     for device in devices:
         if device['id'] == 3:
@@ -89,6 +93,6 @@ def run_commands_by_role(device_role):
 @action("roles/<device_role>")
 @action.uses("devices_by_role.html")
 def devices_by_role(device_role):
-    devices = DeviceManager().get_devices(roles=device_role)
+    devices = DeviceManager().get_devices(roles=device_role, max_results=10)
     url=URL("run_commands_by_role")
     return dict(dev_role=device_role, devices=devices, url=url)

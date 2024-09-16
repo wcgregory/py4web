@@ -37,9 +37,10 @@ class DeviceManager():
         self.num_commands = None
         self.results = None
         self.num_results = None
+        self.limited_results = None
     
     @classmethod
-    def get_devices(cls, device=None, roles=None):
+    def get_devices(cls, device=None, roles=None, max_results=None):
         """
         Class method to retrieve 'devices' from DB Table 'devices'
         Includes an optional parameter for a specific 'device' search and
@@ -62,11 +63,11 @@ class DeviceManager():
         device_list = list()
         for dev in devices:
             dm = DeviceManager()
-            dm.load(dev.id)
+            dm.load(device=dev.id, max_results=max_results)
             device_list.append(dm.to_json())
         return device_list
     
-    def load(self, device):
+    def load(self, device, max_results=None):
         """Create 'device' object and load the related objects"""
         if isinstance(device, int):
             d = DBDevice(db_id=device)
@@ -81,6 +82,8 @@ class DeviceManager():
         self.results = self.get_results()
         self.num_commands = self.commands_count
         self.num_results = self.results_count
+        if max_results and isinstance(max_results, int) and max_results <= self.num_results:
+            self.limit_results(max_results=max_results)
     
     @property
     def commands_count(self):
@@ -95,6 +98,12 @@ class DeviceManager():
         results_by_device = db(db.results.device == self.device.db_id).select()
         results = [DBResult(db_id=result.id) for result in results_by_device]
         return results
+    
+    def limit_results(self, max_results=None):
+        """Return a limited number of 'result' objects based on parameter max_results"""
+        results_by_device = db(db.results.device == self.device.db_id).select()
+        if results_by_device and len(results_by_device) >= max_results:
+            self.limited_results = [DBResult(db_id=result.id) for result in results_by_device[-max_results:]]
     
     def commands_to_json(self):
         """
@@ -113,7 +122,10 @@ class DeviceManager():
         :return results: list conatining the full dataset of results in dict format
         :rtype results: list
         """
-        results = {result.db_id: result.to_json() for result in self.results}
+        if not self.limited_results:
+            results = {result.db_id: result.to_json() for result in self.results}
+        else:
+            results = {result.db_id: result.to_json() for result in self.limited_results}
         return results
     
     def to_json(self):

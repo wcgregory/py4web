@@ -4,6 +4,23 @@
 
 <div class="section">
   <h5>Device: [[=results[0]['device_name']]]</h5>
+  [[if partial:]]
+  <div>
+    <span>Last [[=partial]] Results:</span>
+    <span>
+      <a href="[[=URL('devices', device_id, 'results')]]"> 
+        View All [[=results[0]['device_name']]] Results</a>
+    </span>
+  </div>
+  [[else:]]
+  <div>
+    <span>All Results:</span>
+    <span>
+      <a href="[[=URL('devices', device_id, 'partialresults')]]"> 
+        View Fewer [[=results[0]['device_name']]] Results</a>
+    </span>
+  </div>
+  [[pass]]
   <div class="vars">
     <table>
       <tr>

@@ -1,5 +1,13 @@
 [[extend 'layout.html']]
 
+[[devices_set = set([dev['name'] for dev in devices])]]
+[[device_list = sorted(list(devices_set))]]
+<select class="form-select form-select-sm" aria-label="Select device">
+  <option selected>Select a device</option>
+[[for dev in device_list:]]
+  <option value="[[=dev]]">[[=dev]]</option>
+[[pass]]
+</select>
 <div class="section">
   <h5>Device List</h5>
   <div class="vars">
@@ -26,7 +34,7 @@
           [[pass]]
           </td>
           <td>
-            <a href="[[=URL('devices', device['id'], 'results')]]">[[=list(device['results'].keys())]]</a>
+            <a href="[[=URL('devices', device['id'], 'partialresults')]]">[[=list(device['results'].keys())]]</a>
           </td>
         </tr>
         [[pass]]
