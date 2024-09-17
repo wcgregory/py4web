@@ -2,7 +2,7 @@
 
 [[devices_set = set([dev['name'] for dev in devices])]]
 [[device_list = sorted(list(devices_set))]]
-<select class="form-select form-select-sm" aria-label="Select device">
+<select class="form-select form-select-sm" aria-label=".form-select-sm example" name="select-device">
   <option selected>Select a device</option>
 [[for dev in device_list:]]
   <option value="[[=dev]]">[[=dev]]</option>

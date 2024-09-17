@@ -3,7 +3,7 @@
 
 [[command_set = set([res['command_name'] for res in results])]]
 [[command_list = sorted(list(command_set))]]
-<select name="select_command" class="form-select form-select-sm" aria-label="Select commands">
+<select name="select-command" class="form-select form-select-sm" aria-label=".form-select-sm example">
   <option selected>Select a command to review</option>
 [[for cmd in command_list:]]
   <option value="[[=cmd]]">[[=cmd]]</option>
@@ -52,8 +52,8 @@
         <td>[[=result['result']]]</td>
         <td>
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="[[=result['id']]]" id="flexCheckDefault">
-            <label class="form-check-label" for="flexCheckDefault">
+            <input class="form-check-input" type="checkbox" value="[[=result['id']]]" id="result-id=[[=result['id']]]">
+            <label class="form-check-label" for="result-id=[[=result['id']]]">
               <div>Select to compare</div>
             </label>
           </div>
