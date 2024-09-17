@@ -1,9 +1,11 @@
-let app = {}
+const app = {}
 
 let init = (app) => {
   app.data = {
     //
-    devices: []
+    devices: [],
+    selectedOption: null,
+    select_device: null
   }
   
   app.bcm_button_run_cmds = function(device_id) {
@@ -23,20 +25,26 @@ let init = (app) => {
   }
 
   app.get_devices = function() {
-    // Gets devices in response to page load
+    // Get devices in response to page load
     const url = "/bcm/get_devices"
     axios.get(url).then(function(response) {
       app.vue.devices = response.data.devices
-  })
+    })
   }
 
-  app.select_device = function() {
-    console.log("Test - Selected Device")
+  app.selected_device = function() {
+    //const url = "bcm/devices/<device_id:int>"
+    //this.device = this.devices
+    console.log("Test - Selected Device ", this.select_device)
   }
 
   app.methods = {
     bcm_button_run_cmds: app.bcm_button_run_cmds,
-    bcm_button_run_cmds_role: app.bcm_button_run_cmds_role
+    bcm_button_run_cmds_role: app.bcm_button_run_cmds_role,
+    selected_device: app.selected_device,
+    logSelectedOption() {
+      console.log('Selected Option:', this.selectedOption)
+    }
   }
 
   app.vue = new Vue({

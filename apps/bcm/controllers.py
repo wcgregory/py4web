@@ -17,7 +17,7 @@ from .modules.network_poller import NetworkPoller
 @action.uses("index.html")
 def index():
     return dict(
-        message=f"Hello World @ {datetime.now()}",
+        message=f"{datetime.now()}",
         devices_url=URL('get_devices')
     )
 

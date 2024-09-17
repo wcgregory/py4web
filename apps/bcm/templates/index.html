@@ -2,15 +2,16 @@
 
 <div class="section">
   <div class="vars">
-      [[=message]]
+      Time: [[=message]]
   </div>
-  <div><a href="[[=URL('devices')]]">Devices Page</a></div>
-  <div>
-    <select @change="select_device" v-model="devices.keys()">
-      <option selected>Select a device</option>
-      <option v-for="device in devices" :value="device.id">{{ device.name }}</option>
-    </select>
-  </div>
+  
+  <div>Select a device</div>
+  <select class="form-select form-select-sm" aria-label=".form-select-sm"
+    name="select_device" @change="selected_device" v-model="select_device">
+    <option v-for="device in devices" :value=device.id>{{ device.name }}</option>
+  </select>
+  <div>Selected: {{ select_device }}</div>
+
   <div><a href="[[=URL('results')]]">Results Page</a></div>
   </div>
 </div>
