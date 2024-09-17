@@ -16,12 +16,20 @@ from .modules.network_poller import NetworkPoller
 @action('index')
 @action.uses("index.html")
 def index():
-    return dict(message=f"Hello World @ {datetime.now()}")
+    return dict(
+        message=f"Hello World @ {datetime.now()}",
+        devices_url=URL('get_devices')
+    )
 
 @action("devices")
 @action.uses("devices.html")
 def devices():
     devices = DeviceManager().get_devices(max_results=10)
+    return dict(devices=devices)
+
+@action("get_devices")
+def get_devices():
+    devices = DeviceManager().get_devices()
     return dict(devices=devices)
 
 @action("devices/<device_id:int>")

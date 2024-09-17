@@ -5,6 +5,19 @@
       [[=message]]
   </div>
   <div><a href="[[=URL('devices')]]">Devices Page</a></div>
+  <div>
+    <select @change="select_device" v-model="devices.keys()">
+      <option selected>Select a device</option>
+      <option v-for="device in devices" :value="device.id">{{ device.name }}</option>
+    </select>
+  </div>
   <div><a href="[[=URL('results')]]">Results Page</a></div>
   </div>
 </div>
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+  const devices_url = "[[=XML(devices_url)]]";
+</script>
+<script src="js/bcm.js"></script>
