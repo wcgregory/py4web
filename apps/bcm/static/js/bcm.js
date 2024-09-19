@@ -65,7 +65,7 @@ let init = (app) => {
 
   app.bcm_selected_device = function(event) {
     const device_id = event.target.value
-    //app.vue.device = app.vue.devices_by_role.find(({ id }) => id === device_id)
+    app.vue.device = app.vue.devices_by_role.find(({ id }) => id === device_id)
     console.log("Test - Selected Device ", this.select_device)
   }
 
