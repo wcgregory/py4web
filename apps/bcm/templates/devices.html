@@ -1,13 +1,20 @@
 [[extend 'layout.html']]
 
-[[devices_set = set([dev['name'] for dev in devices])]]
-[[device_list = sorted(list(devices_set))]]
-<select class="form-select form-select-sm" aria-label=".form-select-sm example" name="select-device">
-  <option selected>Select a device</option>
-[[for dev in device_list:]]
-  <option value="[[=dev]]">[[=dev]]</option>
-[[pass]]
-</select>
+<section>
+  <div>Select a device role</div>
+  <select class="form-select form-select-sm" aria-label=".form-select-sm" name="select_role" 
+    @change="select_device_role($event), select_device=null" v-model="select_role">
+    <option v-for="role in device_roles" :value="role">{{ role }}</option>
+  </select>
+  <div>Selected: {{ select_role }}</div>
+  <div>Select a device</div>
+  <select class="form-select form-select-sm" aria-label=".form-select-sm"
+    name="select_device" @change="selected_device($event)" v-model="select_device">
+    <option v-for="device in devices_by_role" :value=device.id>{{ device.name }}</option>
+  </select>
+  <div>Selected: {{ select_device }}</div>
+</section>
+
 <div class="section">
   <h5>Device List</h5>
   <div class="vars">

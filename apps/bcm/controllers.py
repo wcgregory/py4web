@@ -9,6 +9,7 @@ from .common import (
     db, session, T, cache, auth, logger,
     authenticated, unauthenticated, flash
 )
+from .models import DEVICE_ROLES
 from .modules.device_manager import DeviceManager
 from .modules.result_reviewer import ResultsReview
 from .modules.network_poller import NetworkPoller
@@ -31,6 +32,15 @@ def devices():
 def get_devices():
     devices = DeviceManager().get_devices()
     return dict(devices=devices)
+
+@action("get_device_roles")
+def get_device_roles():
+    return dict(roles=DEVICE_ROLES)
+
+@action("get_devices_by_role/:device_role")
+def get_devices_by_role(device_role):
+    devices = DeviceManager().get_devices(roles=device_role)
+    return dict(devices_by_role=devices)
 
 @action("devices/<device_id:int>")
 @action.uses("device.html")
