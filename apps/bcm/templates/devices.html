@@ -4,12 +4,15 @@
   <div>Select a device role</div>
   <select class="form-select form-select-sm" aria-label=".form-select-sm" name="select_role" 
     @change="select_device_role($event), select_device=null" v-model="select_role">
+    <option selected disabled>Select a role</option>
     <option v-for="role in device_roles" :value="role">{{ role }}</option>
   </select>
   <div>Selected: {{ select_role }}</div>
+  
   <div>Select a device</div>
   <select class="form-select form-select-sm" aria-label=".form-select-sm"
     name="select_device" @change="selected_device($event)" v-model="select_device">
+    <option selected disabled>Select a device</option>
     <option v-for="device in devices_by_role" :value=device.id>{{ device.name }}</option>
   </select>
   <div>Selected: {{ select_device }}</div>
@@ -26,25 +29,51 @@
           <th>Commands</th>
           <th>Results</th>
         </tr>
-        [[for device in devices:]]
-        <tr>
-          <td><a href="[[=URL('devices', device['id'])]]">[[=device['id']]]</a></td>
-          <td><a href="[[=URL('devices', device['id'])]]">[[=device['name']]]</a></td>
+        <tr v-if="device">
+          <td>{{ device.id }}</td>
+          <td>{{ device.name }}</td>
           <td>
-          [[for role in device['device_roles']:]]
-            <div><a href="[[=URL('roles', role)]]">[[=role]]</a></div>
-          [[pass]]
+            <ul>
+              <li v-for="role in device.device_roles">{{ role }}</li>
+            </ul>
           </td>
           <td>
-          [[for command in device['commands']:]]
-            <div>[[=command]]:[[=device['commands'][command]]]</div>
-          [[pass]]
+            <div v-for="(command, idx) in device.commands">{{ idx }}: {{ command }}</div>
           </td>
           <td>
-            <a href="[[=URL('devices', device['id'], 'partialresults')]]">[[=list(device['results'].keys())]]</a>
+            <a :href="bcm_device_results_url(device.id)">{{ Object.keys(device.results).slice(-9) }}</a>
           </td>
         </tr>
-        [[pass]]
+        <tr v-else-if="devices_by_role" v-for="device in devices_by_role">
+          <td>{{ device.id }}</td>
+          <td>{{ device.name }}</td>
+          <td>
+            <ul>
+              <li v-for="role in device.device_roles">{{ role }}</li>
+            </ul>
+          </td>
+          <td>
+            <div v-for="(command, idx) in device.commands">{{ idx }}: {{ command }}</div>
+          </td>
+          <td>
+            <a :href="bcm_device_results_url(device.id)">{{ Object.keys(device.results).slice(-9) }}</a>
+          </td>
+        </tr>
+        <tr v-else v-for="device in devices">
+          <td>{{ device.id }}</td>
+          <td>{{ device.name }}</td>
+          <td>
+            <ul>
+              <li v-for="role in device.device_roles">{{ role }}</li>
+            </ul>
+          </td>
+          <td>
+            <div v-for="(command, idx) in device.commands">{{ idx }}: {{ command }}</div>
+          </td>
+          <td>
+            <a :href="bcm_device_results_url(device.id)">{{ Object.keys(device.results).slice(-9) }}</a>
+          </td>
+        </tr>
       </table>
   </div>
 </div>

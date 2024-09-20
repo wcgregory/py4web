@@ -64,14 +64,22 @@ let init = (app) => {
   }
 
   app.bcm_selected_device = function(event) {
-    const device_id = event.target.value
+    const device_id = parseInt(event.target.value)
     app.vue.device = app.vue.devices_by_role.find(({ id }) => id === device_id)
-    console.log("Test - Selected Device ", this.select_device)
+  }
+
+  app.bcm_device_results_url = function(id=None) {
+    if (id) {
+      return `${app.vue.bcm_devices_url}/${id}/results`
+    } else {
+      return app.vue.bcm_devices_url
+    }
   }
 
   app.methods = {
     button_run_cmds: app.bcm_button_run_cmds,
     button_run_cmds_role: app.bcm_button_run_cmds_role,
+    bcm_device_results_url: app.bcm_device_results_url,
     select_device_role: app.bcm_select_device_role,
     selected_device: app.bcm_selected_device,
   }

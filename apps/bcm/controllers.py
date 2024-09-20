@@ -19,7 +19,7 @@ from .modules.network_poller import NetworkPoller
 def index():
     return dict(
         message=f"{datetime.now()}",
-        devices_url=URL('get_devices')
+        #devices_url=URL('get_devices')
     )
 
 @action("devices")
@@ -28,10 +28,21 @@ def devices():
     devices = DeviceManager().get_devices(max_results=10)
     return dict(devices=devices)
 
+@action('results')
+@action.uses("results.html")
+def results():
+    results = ResultsReview().get_results()
+    return dict(results=results)
+
 @action("get_devices")
 def get_devices():
     devices = DeviceManager().get_devices()
     return dict(devices=devices)
+
+@action("selected_device/<device_id:int>")
+def selected_device(device_id):
+    device = DeviceManager().get_devices(device=device_id)
+    return dict(device=device)
 
 @action("get_device_roles")
 def get_device_roles():
@@ -67,12 +78,6 @@ def device_results(device_id, limit=10):
     if limit and limit >= len(results):
         results_list = results_list[-limit:]
     return dict(device_id=device_id, partial=limit, results=results_list)
-
-@action('results')
-@action.uses("results.html")
-def results():
-    results = ResultsReview().get_results()
-    return dict(results=results)
 
 @action("run_commands/<device_id:int>", method=["GET"])
 def run_commands(device_id):
