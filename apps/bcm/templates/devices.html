@@ -2,10 +2,12 @@
 
 <section>
   <div>Select a device role</div>
-  <select class="form-select form-select-sm" aria-label=".form-select-sm" name="select_role" 
-    @change="select_device_role($event), select_device=null" v-model="select_role">
+  <select class="form-select form-select-sm" aria-label=".form-select-sm"
+    name="select_role" @change="select_device_role($event), select_device=null"
+    v-model="select_role">
     <option selected disabled>Select a role</option>
     <option v-for="role in device_roles" :value="role">{{ role }}</option>
+    <option selected>ALL</option>
   </select>
   <div>Selected: {{ select_role }}</div>
   

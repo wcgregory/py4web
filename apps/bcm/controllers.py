@@ -48,10 +48,10 @@ def selected_device(device_id):
 def get_device_roles():
     return dict(roles=DEVICE_ROLES)
 
-@action("get_devices_by_role/:device_role")
-def get_devices_by_role(device_role):
-    devices = DeviceManager().get_devices(roles=device_role)
-    return dict(devices_by_role=devices)
+#@action("get_devices_by_role/:device_role")
+#def get_devices_by_role(device_role):
+#    devices = DeviceManager().get_devices(roles=device_role)
+#    return dict(devices_by_role=devices)
 
 @action("devices/<device_id:int>")
 @action.uses("device.html")

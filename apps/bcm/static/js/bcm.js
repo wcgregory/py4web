@@ -49,18 +49,13 @@ let init = (app) => {
 
   app.bcm_select_device_role = function(event) {
     const role = event.target.value
-    const url = "/bcm/get_devices_by_role/" + role
-    axios.get(url).then(function(response) {
-      app.vue.devices_by_role = response.data.devices_by_role
-    })
-    //app.vue.devices_by_role = app.vue.devices.find(( device ) => device.device_roles.includes(role))
-    //console.log(role)
-    //console.log(app.vue.devices_by_role[0])
-    app.vue.select_device = null
-    //const result = inventory.find(({ name }) => name === "cherries");
-    //app.vue.devices_by_role = app.vue.devices.find(({ dev }) => dev.device_roles.includes(role))
-    //app.vue.devices_by_role = app.vue.devices.find(({ device_roles }) => device_roles.includes(role))
-    //console.log(app.vue.devices_by_role)
+    if (role !== 'ALL') {
+      app.vue.devices_by_role = app.vue.devices.  
+        filter(device => device.device_roles.includes(role))
+    } else {
+      app.vue.devices_by_role = app.vue.devices
+    }
+      app.vue.device = null
   }
 
   app.bcm_selected_device = function(event) {
