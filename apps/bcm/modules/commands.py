@@ -213,7 +213,6 @@ class DBCommand(BCMDb):
             self.output_parsers.sort()
             self.modified_on = DBCommand.get_timestamp()
             db_rec.update_record(output_parsers=self.output_parsers, modified_on=self.modified_on)
-            print(self.output_parsers)
             db.commit()
             logging.warning(f"Updating the command id={db_rec.id} 'output_parsers'")
             return True
@@ -225,7 +224,7 @@ class DBCommand(BCMDb):
         """
         Remove 'output_parsers' from command 'output_parsers'
         ---
-        :return True or False: based on whether 'commmand_parsers' is removed
+        :return True or False: based on whether 'output_parsers' is removed
         """
         if db_rec is None:
             if db_id is None:
@@ -240,26 +239,26 @@ class DBCommand(BCMDb):
         if parser_id and isinstance(parser_id, int):
             self.output_parsers = [op_id for op_id in self.output_parsers if op_id != parser_id]
             if self.output_parsers == db_rec.output_parsers:
-                logging.warning(f"No 'command_parser' id={parser_id} found in 'output_parsers'")
+                logging.warning(f"No 'output_parser' id={parser_id} found in 'output_parsers'")
                 return False
             else:
                 self.modified_on = DBCommand.get_timestamp()
                 self.output_parsers.sort()
                 db_rec.update_record(output_parsers=self.output_parsers, modified_on=self.modified_on)
                 db.commit()
-                logging.warning(f"Removed 'command_parser' id={parser_id} from 'output_parsers'")
+                logging.warning(f"Removed 'output_parser' id={parser_id} from 'output_parsers'")
             return True
         if parser_id and isinstance(parser_id, list):
             self.output_parsers = [op_id for op_id in self.output_parsers if not op_id in parser_id]
             if self.output_parsers == db_rec.output_parsers:
-                logging.warning(f"No 'command_parser' id={parser_id} found in 'output_parsers'")
+                logging.warning(f"No 'output_parser' id={parser_id} found in 'output_parsers'")
                 return False
             else:
                 self.modified_on = DBCommand.get_timestamp()
                 self.output_parsers.sort()
                 db_rec.update_record(output_parsers=self.output_parsers, modified_on=self.modified_on)
                 db.commit()
-                logging.warning(f"Removed 'command_parser' id={parser_id} from 'output_parsers'")
+                logging.warning(f"Removed 'output_parser' id={parser_id} from 'output_parsers'")
                 return True
         elif not parser_id:
             removed = self.output_parsers

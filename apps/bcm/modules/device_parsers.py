@@ -14,7 +14,7 @@ class Parser(BCMDb):
         db_row_cmds = db(db.commands.vendors.contains(self.vendor)).select()
         self.commands = [{cmd.syntax: {}} for cmd in db_row_cmds]
     
-    def add_command_parser(self, command, parser):
+    def add_output_parser(self, command, parser):
         if command in self.commands.keys():
             self.commands.update(parser)
 
