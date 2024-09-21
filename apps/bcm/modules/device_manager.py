@@ -9,7 +9,7 @@ from ..models import db
 from .devices import DBDevice
 from .commands import DBCommand
 from .results import DBResult
-from .command_parsers import DBParser
+from .output_parsers import DBParser
 
 
 """      

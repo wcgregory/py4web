@@ -6,7 +6,7 @@ from .devices import DBDevice
 from .commands import DBCommand
 from .results import DBResult
 from .network_poller import NetworkPoller
-from .command_parsers import DBParser
+from .output_parsers import DBParser
 
 DEVICES = [
     {

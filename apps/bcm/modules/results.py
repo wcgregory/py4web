@@ -72,6 +72,8 @@ class DBResult(BCMDb):
                 self.last_result = db_last_rec.id
         # add to query to check key field 'completed_at' for uniqueness
         query &= (db.results.completed_at == self.completed_at)
+        # ensure result is saved as a JSON blob
+        # self.result = json.dumps(self.result.replace("'", "\""))
         if db(query).count() == 0:
             db.results.insert(device=self.device, command=self.command,
                 completed_at=self.completed_at, status=self.status,

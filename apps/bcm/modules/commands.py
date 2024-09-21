@@ -180,7 +180,7 @@ class DBCommand(BCMDb):
     
     def update_output_parsers(self, db_rec=None, db_id=None):
         """
-        Retrieve DB records from many to many mapping with table 'command_parsers'
+        Retrieve DB records from many to many mapping with table 'output_parsers'
         Output parsers are used to standardise the output response by vendor_os
         ---
         :return True or False: based on whether 'commmand_parsers' exist for the command id
@@ -195,10 +195,10 @@ class DBCommand(BCMDb):
             db_rec = db(db.commands.id == rec_id).select().first()
         if not db_rec or (db_rec and not isinstance(db_rec, Row)):
             raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
-        if db(db.command_parsers.command == db_rec.id).count() == 0:
-            logging.warning("There are no 'command_parsers' mapped to this command")
+        if db(db.output_parsers.command == db_rec.id).count() == 0:
+            logging.warning("There are no 'output_parsers' mapped to this command")
             return False
-        cmd_parsers = db(db.command_parsers.command == db_rec.id).select()
+        cmd_parsers = db(db.output_parsers.command == db_rec.id).select()
         if not self.output_parsers:
             output_parsers = [parser_rec.id for parser_rec in cmd_parsers]
         else:
@@ -223,7 +223,7 @@ class DBCommand(BCMDb):
     
     def remove_output_parsers(self, db_rec=None, db_id=None, parser_id=None):
         """
-        Remove 'command_parsers' from command 'output_parsers'
+        Remove 'output_parsers' from command 'output_parsers'
         ---
         :return True or False: based on whether 'commmand_parsers' is removed
         """
@@ -266,7 +266,7 @@ class DBCommand(BCMDb):
             self.modified_on = DBCommand.get_timestamp()
             db_rec.update_record(output_parsers=list(), modified_on=self.modified_on)
             db.commit()
-            logging.warning(f"Removed all 'command_parsers', {removed} from 'output_parsers'")
+            logging.warning(f"Removed all 'output_parsers', {removed} from 'output_parsers'")
             return True
         # catch all error
         logging.warning("Unknown error, more information/debugging required")
@@ -293,12 +293,12 @@ class DBCommand(BCMDb):
             logging.warning(f"Unable to delete command id={db_rec.id} while used by device in 'devices'")
         elif db(db.results.command.belongs(db(db.commands.id == db_rec.id).select())).count() > 0:
             logging.warning(f"Unable to delete command id={db_rec.id} while in table 'results'")
-        elif db(db.command_parsers.command.belongs(db(db.commands.id == db_rec.id).select())).count() > 0:
-            logging.warning(f"Unable to delete command id={db_rec.id} while in table 'command_parsers'")
+        elif db(db.output_parsers.command.belongs(db(db.commands.id == db_rec.id).select())).count() > 0:
+            logging.warning(f"Unable to delete command id={db_rec.id} while in table 'output_parsers'")
         elif (
             db(db.devices.commands.contains(db_rec.id)).count() == 0 and
             db(db.results.command.belongs(db(db.commands.id == db_rec.id).select())).count() == 0 and
-            db(db.command_parsers.command.belongs(db(db.commands.id == db_rec.id).select())).count() == 0
+            db(db.output_parsers.command.belongs(db(db.commands.id == db_rec.id).select())).count() == 0
         ):
             db(db.devices.id == db_rec.id).delete()
             db.commit()

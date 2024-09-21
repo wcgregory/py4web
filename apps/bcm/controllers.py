@@ -79,7 +79,7 @@ def device_results(device_id, limit=None):
         results_list = results_list[-limit:]
     return dict(device_id=device_id, limit=limit, results=results_list)
 
-@action("run_commands/<device_id:int>", method=["GET"])
+@action("run_commands/<device_id:int>", method=["GET", "POST"])
 def run_commands(device_id):
     """
     export USERACC='admin'
@@ -96,7 +96,7 @@ def run_commands(device_id):
     device.save_results()
     return dict()
 
-@action("run_commands_by_role/:device_role", method=["GET"])
+@action("run_commands_by_role/:device_role", method=["GET", "POST"])
 def run_commands_by_role(device_role):
     if device_role == 'ALL':
         devices = DeviceManager().get_devices()
@@ -122,3 +122,15 @@ def devices_by_role(device_role):
     devices = DeviceManager().get_devices(roles=device_role, max_results=10)
     url=URL("run_commands_by_role")
     return dict(dev_role=device_role, devices=devices, url=url)
+
+@action("compare_results/:results")
+def compare_results(results):
+    result_one = results.split("n")[0]
+    result_two = results.split("n")[1]
+    reviewer = ResultsReview(result_one=result_one, result_two=result_two)
+    reviewer.load_device()
+    reviewer.load_command()
+    reviewer.get_output_parser()
+    reviewer.results_comparison()
+    comparison = reviewer.to_json()
+    return comparison
