@@ -1,6 +1,11 @@
 [[extend 'layout.html']]
 <link rel="stylesheet" href="css/style.css">
 
+<div>Checked Results: {{ checked_results }}</div>
+<button
+  type="button" class="btn btn-primary" @click="button_compare_results(checked_results)">Compare
+</button>
+
 [[command_set = set([res['command_name'] for res in results])]]
 [[command_list = sorted(list(command_set))]]
 <select name="select-command" class="form-select form-select-sm" aria-label=".form-select-sm example">
@@ -11,7 +16,7 @@
 </select>
 
 <button
-  type="button" class="btn btn-primary" @click="bcm_button_compare_results()">Compare
+  type="button" class="btn btn-primary" @click="bcm_button_compare_results(checked_results)">Compare
 </button>
 
 <div class="section">
@@ -52,9 +57,11 @@
         <td>[[=result['result']]]</td>
         <td>
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="[[=result['id']]]" id="result-id=[[=result['id']]]">
+            <input class="form-check-input"
+              type="checkbox" value="[[=result['id']]]" id="result-id=[[=result['id']]]"
+              v-model="checked_results">
             <label class="form-check-label" for="result-id=[[=result['id']]]">
-              <div>Select to compare</div>
+              <div>Check 2 results to compare</div>
             </label>
           </div>
         </td>

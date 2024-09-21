@@ -131,11 +131,35 @@ RESULTS = [
 PARSERS = [    
     {
         "vendor": "Cisco",
+        "command": 1,
+        "device_os": "nxos",
+        "is_json": True,
+        "parser_path": [],
+        "name": "nxos_sho_version"
+    },
+    {
+        "vendor": "Cisco",
         "command": 2,
         "device_os": "nxos",
         "is_json": True,
         "parser_path": ["TABLE_intf", "ROW_intf"],
         "name": "nxos_sho_ip_int_brief"
+    },
+    {
+        "vendor": "Cisco",
+        "command": 1,
+        "device_os": "ios",
+        "is_json": True,
+        "parser_path": [],
+        "name": "ios_sho_version"
+    },
+    {
+        "vendor": "Cisco",
+        "command": 2,
+        "device_os": "ios",
+        "is_json": True,
+        "parser_path": [],
+        "name": "ios_sho_ip_int_brief"
     }
 ]
 
@@ -160,6 +184,7 @@ for parser in PARSERS:
     record.from_json(parser)
     record.save()
 
+"""
 device = NetworkPoller(device_id=3)
 device.load_device_commands()
 device.run_device_commands(auth=('admin', 'C1sco12345'))
@@ -169,6 +194,10 @@ device = NetworkPoller(device_id=4)
 device.load_device_commands()
 device.run_device_commands(auth=('admin', 'Admin_1234!'))
 device.save_results()
+"""
+
+add_cmdparser = DBCommand(1)
+add_cmdparser.update_output_parsers()
 
 add_cmdparser = DBCommand(2)
 add_cmdparser.update_output_parsers()

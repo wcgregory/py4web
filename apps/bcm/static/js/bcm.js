@@ -1,6 +1,6 @@
 const app = {}
 
-let init = (app) => {
+const init = (app) => {
   app.data = {
     //
     bcm_home_url: "/bcm/index",
@@ -13,6 +13,8 @@ let init = (app) => {
     device_role: null,
     select_device: null,
     select_role: null,
+    checked_results: [],
+    comparison: null
   }
   
   app.bcm_get_devices = function() {
@@ -31,9 +33,15 @@ let init = (app) => {
     })
   }
 
+  app.bcm_get_device = function(device_id) {
+    // Get device from devices
+    device_id = parseInt(device_id)
+    app.vue.device = app.vue.devices.find(({ id }) => id === device_id)
+  }
+
   app.bcm_button_run_cmds = function(device_id) {
     console.log("Test - Button Pressed")
-    let url="/bcm/run_commands/" + device_id
+    const url = "/bcm/run_commands/" + device_id
     axios.get(url).then(function(response) {
       console.log(response.data)
     })
@@ -41,9 +49,22 @@ let init = (app) => {
 
   app.bcm_button_run_cmds_role = function(device_role) {
     console.log("Test - Button Pressed")
-    let url="/bcm/run_commands_by_role/" + device_role
+    const url = "/bcm/run_commands_by_role/" + device_role
     axios.get(url).then(function(response) {
       console.log(response.data)
+    })
+  }
+
+  app.bcm_button_compare_results = function(results) {
+    console.log("Test - Button Pressed" + results)
+    if (results && results.length !== 2) {
+      console.log("Pease select 2 results")
+      return false
+    }
+    const url = "/bcm/compare_results/" + results[0] + "n" + results[1]
+    axios.get(url).then(function(response) {
+      console.log(response.data)
+      app.vue.comparison = response.data
     })
   }
 
@@ -77,6 +98,8 @@ let init = (app) => {
     bcm_device_results_url: app.bcm_device_results_url,
     select_device_role: app.bcm_select_device_role,
     selected_device: app.bcm_selected_device,
+    bcm_get_device: app.bcm_get_device,
+    button_compare_results: app.bcm_button_compare_results,
   }
 
   app.vue = new Vue({

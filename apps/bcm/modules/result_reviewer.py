@@ -138,7 +138,7 @@ class ResultsReview():
     
     def results_comparison(self):
         """
-        Method to compare two 'result' classes 
+        Method to compare two 'DBResult' classes 
         """
         if not self.result_one or not self.result_two:
             raise ValueError(self.__class__.__name__, "Missing 'results' for comparison")  
@@ -147,66 +147,73 @@ class ResultsReview():
         if not self.output_parser or not isinstance(self.output_parser, DBParser):
             raise TypeError(self.__class__.__name__, f"Expecting DBParser received {type(self.output_parser)}")  
         output_datapath = self.output_parser.parser_path
-        res_one = json.loads(self.result_one.result)
-        res_two = json.loads(self.result_two.result)
+        res_j_one = json.loads(self.result_one.result)
+        res_j_two = json.loads(self.result_two.result)
         if not output_datapath:
-            cur_res = res_one
-            pre_res = res_two
+            res_one = res_j_one
+            res_two = res_j_two
         elif len(output_datapath) == 1:
-            cur_res = res_one[output_datapath[0]]
-            pre_res = res_two[output_datapath[0]]
+            res_one = res_j_one[output_datapath[0]]
+            res_two = res_j_two[output_datapath[0]]
         elif len(output_datapath) == 2:
-            cur_res = res_one[output_datapath[0]][output_datapath[1]]
-            pre_res = res_two[output_datapath[0]][output_datapath[1]]
+            res_one = res_j_one[output_datapath[0]][output_datapath[1]]
+            res_two = res_j_two[output_datapath[0]][output_datapath[1]]
         else:
             logging.warning(f"Need to add support when len > 2 for 'parser_path'")
             return False
-        if cur_res == pre_res:
+        if res_one == res_two:
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
             self.review_status = 'Success'
             self.report = None
-        #elif (cur_res and isinstance(cur_res, dict)) and (pre_res and isinstance(pre_res, dict)):
-        elif isinstance(cur_res, dict) and isinstance(pre_res, dict):
+        #elif (res_one and isinstance(res_one, dict)) and (res_two and isinstance(res_two, dict)):
+        elif isinstance(res_one, dict) and isinstance(res_two, dict):
             # add any differences from the results as a list of differences by key:value
-            pre_diff = list({k:v} for k,v in pre_res.items() if not k in cur_res or v != cur_res[k])
-            cur_diff = list({k:v} for k,v in cur_res.items() if not k in pre_res or v != pre_res[k])
+            pre_diff = list({k:v} for k,v in res_two.items() if not k in res_one or v != res_one[k])
+            cur_diff = list({k:v} for k,v in res_one.items() if not k in res_two or v != res_two[k])
             self.report = {"last_report": pre_diff, "current_report": cur_diff}
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
             self.review_status = 'Failed'
-        #elif (cur_res and isinstance(cur_res, dict)) and (pre_res and isinstance(pre_res, list)):
-        elif isinstance(cur_res, dict) and isinstance(pre_res, list):
+        #elif (res_one and isinstance(res_one, dict)) and (res_two and isinstance(res_two, list)):
+        elif isinstance(res_one, dict) and isinstance(res_two, list):
             # add all differences due to result type mismatch
-            self.report = {"last_report": pre_res, "current_report": cur_res}
+            self.report = {"last_report": res_two, "current_report": res_one}
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
             self.review_status = 'Failed'
             """
                 if self.main_keys:
                 # create a searchable dict using the main keys to match each dict in list
-                dict_search = {k:v for k,v in cur_res.items() if k in self.main_keys}
-                for result in pre_res:
+                dict_search = {k:v for k,v in res_one.items() if k in self.main_keys}
+                for result in res_two:
                     res_match = {k:v for k,v in result.items() if k in self.main_keys}
-                    if dict_search == res_match and cur_res == result:
+                    if dict_search == res_match and res_one == result:
                         self.reviewed = True
                         self.reviewed_at = self.result_one.get_timestamp()
                         self.review_status = 'Failed'
                         self.report = None
             """
-        #elif (cur_res and isinstance(cur_res, list)) and (pre_res and isinstance(pre_res, dict)):
-        elif isinstance(cur_res, list) and pre_res and isinstance(pre_res, dict):
+        #elif (res_one and isinstance(res_one, list)) and (res_two and isinstance(res_two, dict)):
+        elif isinstance(res_one, list) and res_two and isinstance(res_two, dict):
             # add all differences due to result type mismatch
-            self.report = {"last_report": pre_res, "current_report": cur_res}
+            self.report = {"last_report": res_two, "current_report": res_one}
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
             self.review_status = 'Failed'
-        #elif (cur_res and isinstance(cur_res, list)) and (pre_res and isinstance(pre_res, list)):
-        elif isinstance(cur_res, list) and isinstance(pre_res, list):
-            # add any differences from the results using set logic and provide as a list 
-            pre_diff = list(set(pre_res) - set(cur_res))
-            cur_diff = list(set(cur_res) - set(pre_res))
-            self.report = {"last_report": pre_diff, "current_report": cur_diff}
+        #elif (res_one and isinstance(res_one, list)) and (res_two and isinstance(res_two, list)):
+        elif isinstance(res_one, list) and isinstance(res_two, list):
+            if isinstance(res_one[0], dict) and isinstance(res_two[0], dict):
+                set_res1 = set(tuple(sorted(res1.items())) for res1 in sorted(res_one))
+                set_res2 = set(tuple(sorted(res2.items())) for res2 in sorted(res_two))
+                #set_difference = set_res1_list.symmetric_difference(set_res2_list)
+                one_diff = set_res1 - set_res2
+                two_diff = set_res2 - set_res1
+            else:
+                # add any differences from the results using set logic and provide as a list
+                one_diff = list(set(res_one) - set(res_two))
+                two_diff = list(set(res_two) - set(res_one))
+            self.report = {"last_report": two_diff, "current_report": one_diff}
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
             self.review_status = 'Failed'

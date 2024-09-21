@@ -70,6 +70,13 @@ def device_results(device_id, limit=None):
     results_list = [results[device_id][result] for result in results[device_id]]
     return dict(device_id=device_id, limit=limit, results=results_list)
 
+@action("devices/<device_id:int>/results2")
+@action.uses("device_results2.html")
+def device_results2(device_id, limit=None):
+    results = ResultsReview().get_results(device=device_id)
+    results_list = [results[device_id][result] for result in results[device_id]]
+    return dict(device_id=device_id, limit=limit, results=results_list)
+
 @action("devices/<device_id:int>/partialresults")
 @action.uses("device_results.html")
 def device_results(device_id, limit=None):
@@ -125,9 +132,8 @@ def devices_by_role(device_role):
 
 @action("compare_results/:results")
 def compare_results(results):
-    result_one = results.split("n")[0]
-    result_two = results.split("n")[1]
-    reviewer = ResultsReview(result_one=result_one, result_two=result_two)
+    result = sorted(results.split("n"))
+    reviewer = ResultsReview(result_one=result[0], result_two=result[1])
     reviewer.load_device()
     reviewer.load_command()
     reviewer.get_output_parser()
