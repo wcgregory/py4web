@@ -79,3 +79,23 @@
       </table>
   </div>
 </div>
+
+<section v-if="devices_by_role !== null">
+  <button v-if="device"
+    type="button" class="btn btn-primary" @click="button_run_cmds(device)">Run Commands on {{ device.name }}
+  </button>
+  <button v-else-if="select_role === 'ALL'"
+    type="button" class="btn btn-primary" @click="button_run_cmds_role(select_role)">Run Commands on {{ select_role }}
+  </button>
+  <button v-else-if="devices_by_role.length > 0"
+    type="button" class="btn btn-primary" @click="button_run_cmds_role(select_role)">Run Commands on all {{ select_role }}
+  </button>
+  <button v-else disabled
+    type="button" class="btn btn-primary" @click="button_run_cmds_role(select_role)">Run Commands on all {{ select_role }}
+  </button>
+</section>
+<section v-else>
+  <button disabled
+    type="button" class="btn btn-primary" @click="button_run_cmds_role('ALL')">Run Commands on ALL
+  </button>
+</section>

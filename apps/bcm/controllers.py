@@ -68,16 +68,16 @@ def device(device_id):
 def device_results(device_id, limit=None):
     results = ResultsReview().get_results(device=device_id)
     results_list = [results[device_id][result] for result in results[device_id]]
-    return dict(device_id=device_id, partial=limit, results=results_list)
+    return dict(device_id=device_id, limit=limit, results=results_list)
 
 @action("devices/<device_id:int>/partialresults")
 @action.uses("device_results.html")
-def device_results(device_id, limit=10):
+def device_results(device_id, limit=None):
     results = ResultsReview().get_results(device=device_id)
     results_list = [results[device_id][result] for result in results[device_id]]
-    if limit and limit >= len(results):
+    if limit and limit <= len(results_list):
         results_list = results_list[-limit:]
-    return dict(device_id=device_id, partial=limit, results=results_list)
+    return dict(device_id=device_id, limit=limit, results=results_list)
 
 @action("run_commands/<device_id:int>", method=["GET"])
 def run_commands(device_id):
@@ -96,9 +96,12 @@ def run_commands(device_id):
     device.save_results()
     return dict()
 
-@action("run_commands_by_role/<device_role>", method=["GET"])
+@action("run_commands_by_role/:device_role", method=["GET"])
 def run_commands_by_role(device_role):
-    devices = DeviceManager().get_devices(roles=device_role)
+    if device_role == 'ALL':
+        devices = DeviceManager().get_devices()
+    else:
+        devices = DeviceManager().get_devices(roles=device_role)
     for device in devices:
         if device['id'] == 3:
             user_creds = (os.getenv('USERACC'), os.getenv('IOSPASS'))
@@ -110,10 +113,10 @@ def run_commands_by_role(device_role):
         device.load_device_commands()
         device.run_device_commands(auth=user_creds)
         device.save_results()
-    redirect(URL(f"roles/{device_role}"))
+    #redirect(URL(f"roles/{device_role}"))
     return dict()
 
-@action("roles/<device_role>")
+@action("roles/:device_role")
 @action.uses("devices_by_role.html")
 def devices_by_role(device_role):
     devices = DeviceManager().get_devices(roles=device_role, max_results=10)
