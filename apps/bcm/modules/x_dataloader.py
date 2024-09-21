@@ -32,6 +32,17 @@ DEVICES = [
         "site_code": "HACL"
     },
     {
+        "name": "rtrj-dumy-6001",
+        "mgmt_ip": "123.123.123.61",
+        "vendor": "Juniper",
+        "os": "junos",
+        "device_function": "Router",
+        "device_roles": ['INTERNET'],
+        "commands": [],
+        "region": "EMEA",
+        "site_code": "HACL"
+    },
+    {
         "name": "cisco_ios-sandbox-01",
         "mgmt_ip": "sandbox-iosxe-latest-1.cisco.com",
         "vendor": "Cisco",
