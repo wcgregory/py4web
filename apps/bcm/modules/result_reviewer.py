@@ -169,9 +169,9 @@ class ResultsReview():
         #elif (res_one and isinstance(res_one, dict)) and (res_two and isinstance(res_two, dict)):
         elif isinstance(res_one, dict) and isinstance(res_two, dict):
             # add any differences from the results as a list of differences by key:value
-            pre_diff = list({k:v} for k,v in res_two.items() if not k in res_one or v != res_one[k])
-            cur_diff = list({k:v} for k,v in res_one.items() if not k in res_two or v != res_two[k])
-            self.report = {"last_report": pre_diff, "current_report": cur_diff}
+            diff_one = list({k:v} for k,v in res_two.items() if not k in res_one or v != res_one[k])
+            diff_two = list({k:v} for k,v in res_one.items() if not k in res_two or v != res_two[k])
+            self.report = {"last_report": diff_one, "current_report": diff_two}
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
             self.review_status = 'Failed'
@@ -202,18 +202,22 @@ class ResultsReview():
             self.reviewed_at = self.result_one.get_timestamp()
             self.review_status = 'Failed'
         #elif (res_one and isinstance(res_one, list)) and (res_two and isinstance(res_two, list)):
-        elif isinstance(res_one, list) and isinstance(res_two, list):
-            if isinstance(res_one[0], dict) and isinstance(res_two[0], dict):
-                set_res1 = set(tuple(sorted(res1.items())) for res1 in sorted(res_one))
-                set_res2 = set(tuple(sorted(res2.items())) for res2 in sorted(res_two))
-                #set_difference = set_res1_list.symmetric_difference(set_res2_list)
-                one_diff = set_res1 - set_res2
-                two_diff = set_res2 - set_res1
+        elif (isinstance(res_one, list) and isinstance(res_two, list)):
+            if (
+                len(res_one) == 1 and isinstance(res_one[0], dict) and
+                len(res_two) == 1 and isinstance(res_two[0], dict)
+            ):
+                diff_one = list(
+                    {k:v} for k,v in res_two[0].items() if not k in res_one[0] or v != res_one[0][k]
+                )
+                diff_two = list(
+                    {k:v} for k,v in res_one[0].items() if not k in res_two[0] or v != res_two[0][k]
+                )
             else:
                 # add any differences from the results using set logic and provide as a list
-                one_diff = list(set(res_one) - set(res_two))
-                two_diff = list(set(res_two) - set(res_one))
-            self.report = {"last_report": two_diff, "current_report": one_diff}
+                diff_one = list(set(res_one) - set(res_two))
+                diff_two = list(set(res_two) - set(res_one))
+            self.report = {"last_report": diff_two, "current_report": diff_one}
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
             self.review_status = 'Failed'

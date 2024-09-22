@@ -3,8 +3,11 @@
 
 <div>Checked Results: {{ checked_results }}</div>
 <button
-  type="button" class="btn btn-primary" @click="button_compare_results(checked_results)">Compare
+  type="button" class="btn btn-primary" @click="button_compare_results(checked_results)">
+  Compare Results
 </button>
+
+<div>Results Summary: {{ comparison }}</div>
 
 [[command_set = set([res['command_name'] for res in results])]]
 [[command_list = sorted(list(command_set))]]
@@ -15,9 +18,6 @@
 [[pass]]
 </select>
 
-<button
-  type="button" class="btn btn-primary" @click="bcm_button_compare_results(checked_results)">Compare
-</button>
 
 <div class="section">
   <h5>Device: [[=results[0]['device_name']]]</h5>

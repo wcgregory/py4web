@@ -132,8 +132,9 @@ def devices_by_role(device_role):
 
 @action("compare_results/:results")
 def compare_results(results):
-    result = sorted(results.split("n"))
-    reviewer = ResultsReview(result_one=result[0], result_two=result[1])
+    ordered_results = sorted([int(result_id) for result_id in results.split("n")])
+    results_list = [str(result_id) for result_id in ordered_results]
+    reviewer = ResultsReview(result_one=results_list[0], result_two=results_list[1])
     reviewer.load_device()
     reviewer.load_command()
     reviewer.get_output_parser()

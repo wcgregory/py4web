@@ -56,14 +56,19 @@ const init = (app) => {
   }
 
   app.bcm_button_compare_results = function(results) {
-    console.log("Test - Button Pressed" + results)
+    console.log("Test - Button Pressed " + results)
     if (results && results.length !== 2) {
       console.log("Pease select 2 results")
       return false
     }
+    /*const order_results = results.map((result_id) => parseInt(result_id))
+    order_results.sort()
+    console.log(order_results)
+    results = order_results.map((result_id) => result_id.toString())
+    console.log(results)
+    */
     const url = "/bcm/compare_results/" + results[0] + "n" + results[1]
     axios.get(url).then(function(response) {
-      console.log(response.data)
       app.vue.comparison = response.data
     })
   }
