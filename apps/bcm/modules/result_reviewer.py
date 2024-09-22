@@ -164,24 +164,24 @@ class ResultsReview():
         if res_one == res_two:
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
-            self.review_status = 'Success'
+            self.review_status = "Success"
             self.report = None
         #elif (res_one and isinstance(res_one, dict)) and (res_two and isinstance(res_two, dict)):
         elif isinstance(res_one, dict) and isinstance(res_two, dict):
             # add any differences from the results as a list of differences by key:value
             diff_one = list({k:v} for k,v in res_two.items() if not k in res_one or v != res_one[k])
             diff_two = list({k:v} for k,v in res_one.items() if not k in res_two or v != res_two[k])
-            self.report = {"last_report": diff_one, "current_report": diff_two}
+            self.report = {"diff_res_one_res_two": diff_one, "diff_res_two_res_one": diff_two}
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
-            self.review_status = 'Failed'
+            self.review_status = "Failed"
         #elif (res_one and isinstance(res_one, dict)) and (res_two and isinstance(res_two, list)):
         elif isinstance(res_one, dict) and isinstance(res_two, list):
             # add all differences due to result type mismatch
-            self.report = {"last_report": res_two, "current_report": res_one}
+            self.report = {"diff_res_one_res_two": res_one, "diff_res_two_res_one": res_two}
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
-            self.review_status = 'Failed'
+            self.review_status = "Failed"
             """
                 if self.main_keys:
                 # create a searchable dict using the main keys to match each dict in list
@@ -197,10 +197,10 @@ class ResultsReview():
         #elif (res_one and isinstance(res_one, list)) and (res_two and isinstance(res_two, dict)):
         elif isinstance(res_one, list) and res_two and isinstance(res_two, dict):
             # add all differences due to result type mismatch
-            self.report = {"last_report": res_two, "current_report": res_one}
+            self.report = {"diff_res_one_res_two": res_one, "diff_res_two_res_one": res_two}
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
-            self.review_status = 'Failed'
+            self.review_status = "Failed"
         #elif (res_one and isinstance(res_one, list)) and (res_two and isinstance(res_two, list)):
         elif (isinstance(res_one, list) and isinstance(res_two, list)):
             if (
@@ -217,7 +217,7 @@ class ResultsReview():
                 # add any differences from the results using set logic and provide as a list
                 diff_one = list(set(res_one) - set(res_two))
                 diff_two = list(set(res_two) - set(res_one))
-            self.report = {"last_report": diff_two, "current_report": diff_one}
+            self.report = {"diff_res_one_res_two": diff_one, "diff_res_two_res_one": diff_two}
             self.reviewed = True
             self.reviewed_at = self.result_one.get_timestamp()
             self.review_status = 'Failed'
