@@ -50,18 +50,26 @@ class ResultsReview():
         self.comment = None
     
     @classmethod
-    def get_results(cls, device=None):
+    def get_results(cls, device=None, command=None):
         results_by_device = dict()
-        if not device:
+        if not device and not command:
             results = db().select(db.results.ALL, orderby=db.results.device)
-        else:
-            if isinstance(device, int):
+        elif not device and command:
+            raise NotImplementedError("Command not supproted with 'device' parameter")
+        elif device and isinstance(device, int):
+            if not command:
                 results = db(db.results.device == device).select()
-                results_by_device[device] = dict()
-            if isinstance(device, str):
+            else:
+                results = db((db.results.device == device) & (db.results.command == command)).select()
+            #results_by_device[device] = dict()
+        elif isinstance(device, str):
+            if not command:
                 dev = db((db.devices.mgmt_ip == device) | (db.devices.name == device)).select().first()
                 results = db(db.results.device == dev.id).select()
-                results_by_device[dev.id] = dict()
+                #results_by_device[dev.id] = dict()
+            else:
+                dev = db((db.devices.mgmt_ip == device) | (db.devices.name == device)).select().first()
+                results = db((db.results.device == dev.id) & (db.results.command == command)).select()
         for res in results:
             r = DBResult(db_id=res.id)
             d = DBDevice(db_id=r.device)

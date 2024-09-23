@@ -48,16 +48,22 @@
   </table>
 </section>
 
+<section>
+  [[command_set = set([res['command_name'] for res in results])]]
+  [[command_list = sorted(list(command_set))]]
+  <select name="select_command" class="form-select form-select-sm" aria-label=".form-select-sm"
+    @change="selected_command($event)" v-model="select_command">
+    <option selected>Select a command to review</option>
+  [[for cmd in command_list:]]
+    <option value="[[=cmd]]">[[=cmd]]</option>
+  [[pass]]
+  </select>
+</section>
 
-[[command_set = set([res['command_name'] for res in results])]]
-[[command_list = sorted(list(command_set))]]
-<select name="select-command" class="form-select form-select-sm" aria-label=".form-select-sm example">
-  <option selected>Select a command to review</option>
-[[for cmd in command_list:]]
-  <option value="[[=cmd]]">[[=cmd]]</option>
-[[pass]]
-</select>
-
+<div v-if="device_results_by_cmd">
+  <span>Show me the money: {{ device.name }} | {{ select_command }}</span>
+  <!-- <span>{{ device_results_by_cmd['[[=device_id]]'] }}</span> -->
+</div>
 
 <div class="section">
   <h5>Device: [[=results[0]['device_name']]]</h5>

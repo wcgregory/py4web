@@ -39,6 +39,11 @@ def get_devices():
     devices = DeviceManager().get_devices()
     return dict(devices=devices)
 
+@action('device_results_by_command/<device_id:int>/<command_id:int>')
+def device_results_by_command(device_id, command_id):
+    results = ResultsReview().get_results(device=device_id, command=command_id)
+    return dict(results=results)
+
 @action("selected_device/<device_id:int>")
 def selected_device(device_id):
     device = DeviceManager().get_devices(device=device_id)
