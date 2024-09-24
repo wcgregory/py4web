@@ -70,21 +70,14 @@ def device(device_id):
 
 @action("devices/<device_id:int>/results")
 @action.uses("device_results.html")
-def device_results(device_id, limit=None):
+def device_results(device_id):
     results = ResultsReview().get_results(device=device_id)
     results_list = [results[device_id][result] for result in results[device_id]]
-    return dict(device_id=device_id, limit=limit, results=results_list)
+    return dict(device_id=device_id, limit=None, results=results_list)
 
-@action("devices/<device_id:int>/results2")
-@action.uses("device_results2.html")
-def device_results2(device_id, limit=None):
-    results = ResultsReview().get_results(device=device_id)
-    results_list = [results[device_id][result] for result in results[device_id]]
-    return dict(device_id=device_id, limit=limit, results=results_list)
-
-@action("devices/<device_id:int>/partialresults")
+@action("devices/<device_id:int>/partialresults/<limit:int>")
 @action.uses("device_results.html")
-def device_results(device_id, limit=None):
+def device_results(device_id, limit):
     results = ResultsReview().get_results(device=device_id)
     results_list = [results[device_id][result] for result in results[device_id]]
     if limit and limit <= len(results_list):

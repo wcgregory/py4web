@@ -103,7 +103,7 @@ const init = (app) => {
       }
     }
     const url = `/bcm/device_results_by_command/${device_id}/${cmd_id}`
-    axios.get(url).then(function(response) {
+    await axios.get(url).then(function(response) {
       app.vue.device_results_by_cmd = response.data.results
     })
   }

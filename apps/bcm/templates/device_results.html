@@ -60,12 +60,17 @@
   </select>
 </section>
 
-<div v-if="device_results_by_cmd">
-  <span>Show me the money: {{ device.name }} | {{ select_command }}</span>
+<section v-if="device_results_by_cmd" class="section">
+  <h5>Device: {{ device.name }}</h5>
+  <div v-if="limit">
+    <span>All Results:</span>
+    <span><a :href=""></a></span>
+  </div>
+  <span>Show me the money: {{ device_results_by_cmd }} | {{ select_command }}</span>
   <!-- <span>{{ device_results_by_cmd['[[=device_id]]'] }}</span> -->
-</div>
+</section>
 
-<div class="section">
+<section v-else class="section">
   <h5>Device: [[=results[0]['device_name']]]</h5>
   [[if limit:]]
   <div>
@@ -79,7 +84,7 @@
   <div>
     <span>All Results:</span>
     <span>
-      <a href="[[=URL('devices', device_id, 'partialresults')]]"> 
+      <a href="[[=URL('devices', device_id, 'partialresults', 10)]]"> 
         View Fewer [[=results[0]['device_name']]] Results</a>
     </span>
   </div>
@@ -115,4 +120,4 @@
       [[pass]]
     </table>
   </div>
-</div>
+</section>

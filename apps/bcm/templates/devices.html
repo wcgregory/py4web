@@ -40,13 +40,34 @@
             </ul>
           </td>
           <td>
-            <div v-for="(command, idx) in device.commands">{{ idx }}: {{ command }}</div>
+            <div v-for="(command, idx) in device.commands">
+              {{ idx }}: {{ command }}
+            </div>
           </td>
-          <td v-if="device.results && Object.keys(device.results).length > 0">
-            <a :href="bcm_device_results_url(device.id)">{{ Object.keys(device.results).slice(-9) }}</a>
+          <td v-if="device.results && Object.keys(device.results).length > 6">
+            <ul v-for="result in Object.keys(device.results).slice(-6)">
+              <li>
+                <a :href="bcm_device_results_url(device.id)">
+                  Id: #{{ device.results[result].id }}  
+                  Command Id: #{{ device.results[result].command }} | 
+                  Comment: {{ device.results[result].comment }}
+                </a>
+              </li>
+            </ul>
+          </td>
+          <td v-else-if="device.results && Object.keys(device.results).length > 0">
+            <ul v-for="result in device.results">
+              <li>
+                <a :href="bcm_device_results_url(device.id)">
+                  Id: #{{ result.id }}: 
+                  Command Id: #{{ result.command }} | 
+                  Comment: {{ result.comment }}
+                </a>
+              </li>
+            </ul>
           </td>
           <td v-else>
-            {{ Object.keys(device.results).slice(-9) }}
+            {{ Object.keys(device.results) }}
           </td>
         </tr>
         <tr v-else-if="devices_by_role" v-for="device in devices_by_role">
@@ -58,13 +79,34 @@
             </ul>
           </td>
           <td>
-            <div v-for="(command, idx) in device.commands">{{ idx }}: {{ command }}</div>
+            <div v-for="(command, idx) in device.commands">
+              {{ idx }}: {{ command }}
+            </div>
           </td>
-          <td v-if="device.results && Object.keys(device.results).length > 0">
-            <a :href="bcm_device_results_url(device.id)">{{ Object.keys(device.results).slice(-9) }}</a>
+          <td v-if="device.results && Object.keys(device.results).length > 6">
+            <ul v-for="result in Object.keys(device.results).slice(-6)">
+              <li>
+                <a :href="bcm_device_results_url(device.id)">
+                  Id: #{{ device.results[result].id }}  
+                  Command Id: #{{ device.results[result].command }} | 
+                  Comment: {{ device.results[result].comment }}
+                </a>
+              </li>
+            </ul>
+          </td>
+          <td v-else-if="device.results && Object.keys(device.results).length > 0">
+            <ul v-for="result in device.results">
+              <li>
+                <a :href="bcm_device_results_url(device.id)">
+                  Id: #{{ result.id }}: 
+                  Command Id: #{{ result.command }} | 
+                  Comment: {{ result.comment }}
+                </a>
+              </li>
+            </ul>
           </td>
           <td v-else>
-            {{ Object.keys(device.results).slice(-9) }}
+            {{ Object.keys(device.results) }}
           </td>
         </tr>
         <tr v-else v-for="device in devices">
@@ -78,11 +120,29 @@
           <td>
             <div v-for="(command, idx) in device.commands">{{ idx }}: {{ command }}</div>
           </td>
-          <td v-if="device.results && Object.keys(device.results).length > 0">
-            <a :href="bcm_device_results_url(device.id)">{{ Object.keys(device.results).slice(-9) }}</a>
+          <td v-if="device.results && Object.keys(device.results).length > 6">
+            <ul v-for="result in Object.keys(device.results).slice(-6)">
+              <li>
+                <a :href="bcm_device_results_url(device.id)">
+                  Id: #{{ device.results[result].id }}  
+                  Command Id: #{{ device.results[result].command }} | 
+                  Comment: {{ device.results[result].comment }}
+                </a>
+              </li>
+            </ul>
+          </td>
+          <td v-else-if="device.results && Object.keys(device.results).length > 0">
+            <ul v-for="result in device.results">
+              <li>
+                <a :href="bcm_device_results_url(device.id)">
+                  Id: #{{ result.id }}: Command Id: #{{ result.command }} | 
+                  Comment: {{ result.comment }}
+                </a>
+              </li>
+            </ul>
           </td>
           <td v-else>
-            {{ Object.keys(device.results).slice(-9) }}
+            {{ Object.keys(device.results) }}
           </td>
         </tr>
       </table>
