@@ -31,7 +31,7 @@ def devices():
 @action('results')
 @action.uses("results.html")
 def results():
-    results = ResultsReview().get_results()
+    results = ResultsReview().get_results_by_device()
     return dict(results=results)
 
 @action("get_devices")
@@ -39,9 +39,14 @@ def get_devices():
     devices = DeviceManager().get_devices()
     return dict(devices=devices)
 
+@action('get_results')
+def get_results():
+    results = ResultsReview().get_results()
+    return dict(results=results)
+
 @action('device_results_by_command/<device_id:int>/<command_id:int>')
 def device_results_by_command(device_id, command_id):
-    results = ResultsReview().get_results(device=device_id, command=command_id)
+    results = ResultsReview().get_results_by_device(device=device_id, command=command_id)
     return dict(results=results)
 
 @action("selected_device/<device_id:int>")
@@ -71,14 +76,14 @@ def device(device_id):
 @action("devices/<device_id:int>/results")
 @action.uses("device_results.html")
 def device_results(device_id):
-    results = ResultsReview().get_results(device=device_id)
+    results = ResultsReview().get_results_by_device(device=device_id)
     results_list = [results[device_id][result] for result in results[device_id]]
     return dict(device_id=device_id, limit=None, results=results_list)
 
 @action("devices/<device_id:int>/partialresults/<limit:int>")
 @action.uses("device_results.html")
 def device_results(device_id, limit):
-    results = ResultsReview().get_results(device=device_id)
+    results = ResultsReview().get_results_by_device(device=device_id)
     results_list = [results[device_id][result] for result in results[device_id]]
     if limit and limit <= len(results_list):
         results_list = results_list[-limit:]

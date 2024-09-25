@@ -48,9 +48,18 @@ class ResultsReview():
         self.review_status = None
         self.report = None
         self.comment = None
+
+    @staticmethod
+    def get_results():
+        results = db().select(db.results.ALL, orderby=db.results.device)
+        results_list = []
+        for res in results:
+            r = DBResult(db_id=res.id)
+            results_list.append(r.to_json)
+        return results_list
     
     @classmethod
-    def get_results(cls, device=None, command=None):
+    def get_results_by_device(cls, device=None, command=None):
         results_by_device = dict()
         if not device and not command:
             results = db().select(db.results.ALL, orderby=db.results.device)
