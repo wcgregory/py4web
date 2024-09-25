@@ -7,6 +7,7 @@ const init = (app) => {
     bcm_devices_url: "/bcm/devices",
     bcm_results_url: "/bcm/results",
     devices: [],
+    results: null,
     device: null,
     devices_by_role: null,
     device_roles: null,
@@ -32,6 +33,14 @@ const init = (app) => {
     const url = "/bcm/get_device_roles"
     axios.get(url).then(function(response) {
       app.vue.device_roles = response.data.roles
+    })
+  }
+
+  app.bcm_get_results = function() {
+    // Get results in response to page load
+    const url = "/bcm/get_results"
+    axios.get(url).then(function(response) {
+      app.vue.results = response.data.results
     })
   }
 
@@ -117,14 +126,15 @@ const init = (app) => {
   }
 
   app.methods = {
-    button_run_cmds: app.bcm_button_run_cmds,
-    button_run_cmds_role: app.bcm_button_run_cmds_role,
     bcm_device_results_url: app.bcm_device_results_url,
     selected_device_role: app.bcm_selected_device_role,
     selected_device: app.bcm_selected_device,
     selected_command: app.bcm_selected_command,
     bcm_get_device: app.bcm_get_device,
+    button_run_cmds: app.bcm_button_run_cmds,
+    button_run_cmds_role: app.bcm_button_run_cmds_role,
     button_compare_results: app.bcm_button_compare_results,
+    bcm_device_results_url: app.bcm_device_results_url,
   }
 
   app.vue = new Vue({
@@ -134,9 +144,10 @@ const init = (app) => {
   })
 
   app.init = () => {
-    //load the devices...
+    //load the devices, roles and results ...
     app.bcm_get_devices()
     app.bcm_get_device_roles()
+    app.bcm_get_results()
   }
   
   app.init()
