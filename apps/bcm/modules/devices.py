@@ -229,3 +229,37 @@ class DBDevice(BCMDb):
             commands=self.commands, region=self.region, site_code=self.site_code,
             comment=self.comment, created_at=self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             modified_on=self.modified_on.strftime("%Y-%m-%d %H:%M:%S"))
+
+
+class DBDevices():
+    """
+    DB Abstraction class for uniform interaction with lists of 'devices'
+    """
+    def __init__(self, db_ids=None):
+        """
+        Standard constructor class
+        """
+        #self._dbtable = 'devices' -> db.tables == 'devices'
+        self.db_ids = db_ids
+        self.devices = list()
+    
+    @staticmethod
+    def get_devices(db_ids=None):
+        if not db_ids:
+            devices = db(db.devices).select()
+        else:
+            if isinstance(db_ids, list):
+                for db_id in db_ids:
+                    idx = 0
+                    while idx < len(db_ids):
+                        if idx == 0:
+                            query = (db.devices.id == db_id)
+                        else:
+                            query |= (db.devices.id == db_id)
+                        idx += 1
+                devices = db(query).select()
+        devices_list = []
+        for device in devices:
+            d = DBDevice(db_id=device.id)
+            devices_list.append(d.to_json())
+        return devices_list

@@ -342,3 +342,37 @@ class DBCommand(BCMDb):
             device_functions=self.device_functions, device_roles=self.device_roles,
             comment=self.comment, created_at=self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             modified_on=self.modified_on.strftime("%Y-%m-%d %H:%M:%S"))
+
+
+class DBCommands():
+    """
+    DB Abstraction class for uniform interaction with lists of 'commands'
+    """
+    def __init__(self, db_ids=None):
+        """
+        Standard constructor class
+        """
+        #self._dbtable = 'commands' -> db.tables == 'commands'
+        self.db_ids = db_ids
+        self.commands = list()
+    
+    @staticmethod
+    def get_commands(db_ids=None):
+        if not db_ids:
+            commands = db(db.commands).select()
+        else:
+            if isinstance(db_ids, list):
+                for db_id in db_ids:
+                    idx = 0
+                    while idx < len(db_ids):
+                        if idx == 0:
+                            query = (db.commands.id == db_id)
+                        else:
+                            query |= (db.commands.id == db_id)
+                        idx += 1
+                commands = db(query).select()
+        commands_list = []
+        for cmd in commands:
+            c = DBCommand(db_id=cmd.id)
+            commands_list.append(c.to_json())
+        return commands_list
