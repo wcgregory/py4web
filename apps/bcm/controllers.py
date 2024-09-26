@@ -10,7 +10,9 @@ from .common import (
     authenticated, unauthenticated, flash
 )
 from .models import DEVICE_ROLES
+from .modules.devices import DBDevices
 from .modules.commands import DBCommands
+from .modules.results import DBResults
 from .modules.device_manager import DeviceManager
 from .modules.result_reviewer import ResultsReview
 from .modules.network_poller import NetworkPoller

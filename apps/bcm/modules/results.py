@@ -127,3 +127,37 @@ class DBResult(BCMDb):
                 completed_at=self.completed_at.strftime("%Y-%m-%d %H:%M:%S"),
                 status=self.status, result=self.result,
                 last_result=self.last_result, comment=self.comment)
+
+
+class DBResults():
+    """
+    DB Abstraction class for uniform interaction with lists of 'results'
+    """
+    def __init__(self, db_ids=None):
+        """
+        Standard constructor class
+        """
+        #self._dbtable = 'results' -> db.tables == 'results'
+        self.db_ids = db_ids
+        self.results = list()
+    
+    @staticmethod
+    def get_results(db_ids=None):
+        if not db_ids:
+            results = db(db.results).select()
+        else:
+            if isinstance(db_ids, list):
+                for db_id in db_ids:
+                    idx = 0
+                    while idx < len(db_ids):
+                        if idx == 0:
+                            query = (db.results.id == db_id)
+                        else:
+                            query |= (db.results.id == db_id)
+                        idx += 1
+                results = db(query).select()
+        results_list = []
+        for result in results:
+            r = DBResult(db_id=result.id)
+            results_list.append(r.to_json())
+        return results_list
