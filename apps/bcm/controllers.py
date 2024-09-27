@@ -17,6 +17,7 @@ from .modules.device_manager import DeviceManager
 from .modules.result_reviewer import ResultsReview
 from .modules.network_poller import NetworkPoller
 
+"""
 @action('index')
 @action.uses("index.html")
 def index():
@@ -24,6 +25,21 @@ def index():
         message=f"{datetime.now()}",
         #devices_url=URL('get_devices')
     )
+"""
+
+@action('index')
+@action.uses('index.html', db)
+def index():
+    return dict(
+        # COMPLETE: return here any signed URLs you need.
+        my_devices_url = URL('my_devices'),
+    )
+
+@action('my_devices')
+@action.uses(db)
+def my_callback():
+    devices = DBDevices().get_devices()
+    return dict(devices=devices)
 
 @action("devices")
 @action.uses("devices.html")
