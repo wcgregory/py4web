@@ -3,9 +3,9 @@ const app = {}
 const init = (app) => {
   app.data = {
     //
-    bcm_home_url: "/bcm/index",
-    bcm_devices_url: "/bcm/devices",
-    bcm_results_url: "/bcm/results",
+    //bcm_home_url: "/bcm/index",
+    //bcm_devices_url: "/bcm/devices",
+    //bcm_results_url: "/bcm/results",
     devices: [],
     results: null,
     device: null,

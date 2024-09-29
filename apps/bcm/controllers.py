@@ -30,10 +30,7 @@ def index():
 @action('index')
 @action.uses('index.html', db)
 def index():
-    return dict(
-        # COMPLETE: return here any signed URLs you need.
-        my_devices_url = URL('my_devices'),
-    )
+    return dict()
 
 @action('my_devices')
 @action.uses(db)
@@ -45,7 +42,11 @@ def my_callback():
 @action.uses("devices.html")
 def devices():
     devices = DeviceManager().get_devices(max_results=10)
-    return dict(devices=devices)
+    # COMPLETE: return here any signed URLs you need.
+    return dict(
+        devices=devices,
+        bcm_devices_url = URL('bcm_devices')
+    )
 
 @action('results')
 @action.uses("results.html")

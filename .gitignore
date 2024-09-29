@@ -12,3 +12,4 @@ apps/bcm/_scaffold
 apps/nav/_scaffold
 password.txt
 .service/
+bulma/

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/no.css">
     <link rel="stylesheet" href="css/bulma.min.css">
     <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/devices.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
     <style>.py4web-validation-error{margin-top:-16px; font-size:0.8em;color:red}</style>
     [[block page_head]]<!-- individual pages can customize header here -->[[end]]
@@ -28,9 +29,11 @@
                 <b>[[=URL('index').split("/")[-2].upper()]]</b>
               </a>
             </li>
+            <li>
               <a href="[[=URL('devices')]]">
                 <b>[[=URL('devices').split("/")[-1].capitalize()]]</b>
               </a>
+            </li>
             <li>
               <a href="[[=URL('results')]]">
                 <b>[[=URL('results').split("/")[-1].capitalize()]]</b>
