@@ -100,7 +100,7 @@ class DBResult(BCMDb):
 
     def from_json(self, json_data):
         """
-        Method to load a device object from a json data set.
+        Method to load a results object from a json data set.
         Must not set the DB id (db_id), if successful set self.json_import to True
         """
         if 'device' in json_data.keys() and json_data['device']:

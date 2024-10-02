@@ -182,7 +182,7 @@ class DBDevice(BCMDb):
     
     def from_json(self, json_data):
         """
-        Method to load a device object from a json data set.
+        Method to load a devices object from a json data set.
         If successful set self.json_import to True
         Currently assumes no DB id - TODO: id and DB validation
         ---

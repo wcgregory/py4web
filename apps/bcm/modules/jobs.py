@@ -19,23 +19,23 @@ class DBJob(BCMDb):
         """
         super(DBJob, self).__init__(db_id=db_id)
         #self._dbtable = 'jobs' -> db.tables == 'jobs'
-        self.device = None
-        self.command = None
+        self.name = None
+        self.devices = list()
+        self.results = list()
+        self.started_at = None
         self.completed_at = None
         self.status = None
-        self.result = None
-        self.last_result = None
         self.comment = None
         if self.db_id:
             self.load_by_id()
     
     def load_by_id(self, db_rec=None, db_id=None):
         """
-        Method to load a results object from the DB table using the DB id
+        Method to load a jobs object from the DB table using the DB id
         ---
-        :param db_rec: a valid results DB record
+        :param db_rec: a valid jobs DB record
         :type db_rec: Row (pydal.objects.Row)
-        :param db_id: a valid results DB id
+        :param db_id: a valid jobs DB id
         :type db_id: int
         """
         if db_rec is None:
@@ -45,15 +45,15 @@ class DBJob(BCMDb):
                 rec_id = db_id
             if not rec_id:
                 raise ValueError(self.__class__.__name__, "Invalid or missing record id")
-            db_rec = db(db.results.id == rec_id).select().first()    
+            db_rec = db(db.jobs.id == rec_id).select().first()    
         if not db_rec:
             raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
-        self.device = db_rec.device
-        self.command = db_rec.command
+        self.name = db_rec.name
+        self.devices = db_rec.devices
+        self.results = db_rec.results
+        self.started_at = db_rec.started_at
         self.completed_at = db_rec.completed_at
         self.status = db_rec.status
-        self.result = db_rec.result
-        self.last_result = db_rec.last_result
         self.comment = db_rec.comment
         self.db_loaded = True
     
@@ -64,33 +64,23 @@ class DBJob(BCMDb):
         ---
         :return True or False: based on whether a new record is created or not
         """
-        # create query to check whether 'device' has run 'command' before
-        query = (db.results.device == self.device) & (db.results.command == self.command)
+        # create query to check whether 'jobs' name already exists
+        query = (db.jobs.name == self.name)
         if db(query).count() > 0:
-            db_last_rec = db(query).select().last()
-            if db_last_rec and isinstance(db_last_rec, Row):
-                self.last_result = db_last_rec.id
-        # add to query to check key field 'completed_at' for uniqueness
-        query &= (db.results.completed_at == self.completed_at)
-        # ensure result is saved as a JSON blob
-        # self.result = json.dumps(self.result.replace("'", "\""))
-        if db(query).count() == 0:
-            db.results.insert(device=self.device, command=self.command,
+            logging.warning(f"Duplicate 'name' exists in 'jobs' table for name={self.name}")
+            return False
+        elif db(query).count() == 0:
+            db.jobs.insert(name=self.name, devices=self.devices,
+                results=self.results, started_at=self.started_at,
                 completed_at=self.completed_at, status=self.status,
-                result=self.result, last_result=self.last_result,
                 comment=self.comment)
             db.commit()
             db_rec = db(query).select().first()
             if db_rec:
                 self.db_id = db_rec.id
                 self.db_created = True
-                logging.warning(f"New record created in table 'results' id={self.db_id}")
+                logging.warning(f"New record created in table 'jobs' id={self.db_id}")
                 return True
-        elif db(query).count() > 0:
-            db_rec = db(query).select().first()
-            self.db_id = db_rec.id
-            logging.warning(f"Record exists in table 'results' id={self.db_id} - no updates permitted")
-            return False
         # catch-all error
         logging.warning("Unknown Error, more information/debugging required")
         db.rollback()
@@ -98,21 +88,21 @@ class DBJob(BCMDb):
 
     def from_json(self, json_data):
         """
-        Method to load a device object from a json data set.
+        Method to load a jobs object from a json data set.
         Must not set the DB id (db_id), if successful set self.json_import to True
         """
-        if 'device' in json_data.keys() and json_data['device']:
-            self.device = int(json_data['device'])
-        if 'command' in json_data.keys() and json_data['command']:
-            self.command = int(json_data['command'])
+        if 'name' in json_data.keys() and json_data['name']:
+            self.name =  json_data['name'].strip()
+        if 'devices' in json_data.keys() and json_data['devices']:
+            self.devices = json_data['devices']
+        if 'results' in json_data.keys() and json_data['command']:
+            self.command = json_data['command']
+        if 'started_at' in json_data.keys() and json_data['started_at']:
+            self.started_at = json_data['started_at'].strip()
         if 'completed_at' in json_data.keys() and json_data['completed_at']:
             self.completed_at = json_data['completed_at'].strip()
         if 'status' in json_data.keys() and json_data['status']:
             self.status = json_data['status'].strip().capitalize()
-        if 'result' in json_data.keys() and json_data['result']:
-            self.result = json_data['result']
-        if 'last_result' in json_data.keys() and json_data['last_result']:
-            self.last_result = int(json_data['last_result'])
         if 'comment' in json_data.keys() and json_data['comment']:
             self.comment =  json_data['comment'].strip()
         self.json_import = True
@@ -123,41 +113,48 @@ class DBJob(BCMDb):
         ---
         :return: class attributes as dict
         """
-        return dict(id=self.db_id, device=self.device, command=self.command,
+        self.name = db_rec.name
+        self.devices = db_rec.devices
+        self.results = db_rec.results
+        self.started_at = db_rec.started_at
+        self.completed_at = db_rec.completed_at
+        self.status = db_rec.status
+        self.comment = db_rec.comment
+        return dict(id=self.db_id, name=self.name, devices=self.devices,
+                results=self.results, started_at=self.started_at.strftime("%Y-%m-%d %H:%M:%S"),
                 completed_at=self.completed_at.strftime("%Y-%m-%d %H:%M:%S"),
-                status=self.status, result=self.result,
-                last_result=self.last_result, comment=self.comment)
+                status=self.status, rcomment=self.comment)
 
 
-class DBResults():
+class DBJobs():
     """
-    DB Abstraction class for uniform interaction with lists of 'results'
+    DB Abstraction class for uniform interaction with lists of 'jobs'
     """
     def __init__(self, db_ids=None):
         """
         Standard constructor class
         """
-        #self._dbtable = 'results' -> db.tables == 'results'
+        #self._dbtable = 'jobs' -> db.tables == 'jobs'
         self.db_ids = db_ids
-        self.results = list()
+        self.jobs = list()
     
     @staticmethod
-    def get_results(db_ids=None):
+    def get_jobs(db_ids=None):
         if not db_ids:
-            results = db(db.results).select()
+            jobs = db(db.jobs).select()
         else:
             if isinstance(db_ids, list):
                 for db_id in db_ids:
                     idx = 0
                     while idx < len(db_ids):
                         if idx == 0:
-                            query = (db.results.id == db_id)
+                            query = (db.jobs.id == db_id)
                         else:
-                            query |= (db.results.id == db_id)
+                            query |= (db.jobs.id == db_id)
                         idx += 1
-                results = db(query).select()
-        results_list = []
-        for result in results:
-            r = DBResult(db_id=result.id)
-            results_list.append(r.to_json())
-        return results_list
+                jobs = db(query).select()
+        jobs_list = []
+        for job in jobs:
+            j = DBJob(db_id=job.id)
+            jobs_list.append(j.to_json())
+        return jobs_list
