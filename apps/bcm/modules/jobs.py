@@ -113,13 +113,6 @@ class DBJob(BCMDb):
         ---
         :return: class attributes as dict
         """
-        self.name = db_rec.name
-        self.devices = db_rec.devices
-        self.results = db_rec.results
-        self.started_at = db_rec.started_at
-        self.completed_at = db_rec.completed_at
-        self.status = db_rec.status
-        self.comment = db_rec.comment
         return dict(id=self.db_id, name=self.name, devices=self.devices,
                 results=self.results, started_at=self.started_at.strftime("%Y-%m-%d %H:%M:%S"),
                 completed_at=self.completed_at.strftime("%Y-%m-%d %H:%M:%S"),
