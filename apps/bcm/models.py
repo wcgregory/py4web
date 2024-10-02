@@ -54,6 +54,7 @@ db.define_table(
     Field('is_json', 'boolean'),
     Field('parser_path', 'list:string', notnull=True),
     Field('main_keys', 'list:string'),
+    Field('ignore_keys', 'list:string'),
     Field('name', 'string'),
     Field('created_at', 'datetime', notnull=True),
     Field('modified_on', 'datetime'),
@@ -83,10 +84,23 @@ db.define_table(
     Field('command', 'reference commands', notnull=True),
     Field('completed_at', 'datetime', notnull=True),
     Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES), notnull=True),
+    Field('job', 'reference jobs', notnull=True),
     Field('result', 'text'),
     Field('last_result', 'reference results'),
     Field('comment', 'string'),
     format='%(comment)s'
+)
+
+db.define_table(
+    'jobs',
+    Field('name', 'string', length=128, notnull=True, unique=True),
+    Field('devices', 'list:reference devices', notnull=True),
+    Field('results', 'list:reference results', notnull=True),
+    Field('started_at', 'datetime', notnull=True),
+    Field('completed_at', 'datetime'),
+    Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES), notnull=True),
+    Field('comment', 'string'),
+    format='%(name)s %(comment)s'
 )
 
 db.commit()

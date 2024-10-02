@@ -25,6 +25,7 @@ class DBParser(BCMDb):
         self.is_json = bool()
         self.parser_path = list()  # path to main body of response output
         self.main_keys = list()
+        self.ignore_keys = list()
         self.name = None
         self.created_at = None
         self.modified_on = None
@@ -57,6 +58,7 @@ class DBParser(BCMDb):
         self.is_json = db_rec.is_json
         self.parser_path = db_rec.parser_path
         self.main_keys = db_rec.main_keys
+        self.ignore_keys = db_rec.ignore_keys
         self.name = db_rec.name
         self.created_at = db_rec.created_at
         self.modified_on = db_rec.modified_on
@@ -80,7 +82,6 @@ class DBParser(BCMDb):
             db_rec = db(db.output_parsers.id == rec_id).select().first()    
         if not db_rec:
             raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
-        
         self.db_id = db_rec.id
         self.vendor = db_rec.vendor
         self.command = db_rec.command
@@ -88,6 +89,7 @@ class DBParser(BCMDb):
         self.is_json = db_rec.is_json
         self.parser_path = db_rec.parser_path
         self.main_keys = db_rec.main_keys
+        self.ignore_keys = db_rec.ignore_keys
         self.name = db_rec.name
         self.created_at = db_rec.created_at
         self.modified_on = db_rec.modified_on
@@ -115,7 +117,8 @@ class DBParser(BCMDb):
             self.modified_on = self.created_at
             db.output_parsers.insert(vendor=self.vendor, command=self.command,
                 device_os=self.device_os, is_json=self.is_json,
-                parser_path=self.parser_path, main_keys=self.main_keys, name=self.name,
+                parser_path=self.parser_path, main_keys=self.main_keys,
+                ignore_keys=self.ignore_keys, name=self.name,
                 created_at=self.created_at, modified_on=self.modified_on)
             db.commit()
             db_rec = db(query).select().first()
@@ -133,7 +136,8 @@ class DBParser(BCMDb):
             self.modified_on = DBParser.get_timestamp()
             db.output_parsers.update_or_insert(query,
                 vendor=self.vendor, command=self.command, device_os=self.device_os,
-                is_json=self.is_json, parser_path=self.parser_path, main_keys=self.main_keys,
+                is_json=self.is_json, parser_path=self.parser_path,
+                main_keys=self.main_keys, ignore_keys=self.ignore_keys,
                 name=self.name, modified_on=self.modified_on)
             db.commit()
             logging.warning(f"Updated record in table 'output_parsers' with id={self.db_id}")
@@ -165,6 +169,7 @@ class DBParser(BCMDb):
         if (
             self.parser_path != db_rec.parser_path or
             self.main_keys != db_rec.main_keys or
+            self.ignore_keys != db_rec.ignore_keys or
             self.name != db_rec.name
         ):
             return True
@@ -188,10 +193,10 @@ class DBParser(BCMDb):
             db_rec = db(db.output_parsers.id == rec_id).select().first()
         if not db_rec or (db_rec and not isinstance(db_rec, Row)):
             raise TypeError(self.__class__.__name__, f"Invalid type expecting Row received {type(db_rec)}")
-        if db(db.commands.parser_path.contains(db_rec.id)).count() > 0:
+        if db(db.commands.output_parsers.contains(db_rec.id)).count() > 0:
             logging.warning(f"Unable to delete 'output_parsers' id={db_rec.id} while used "
-                            "as an 'parser_path' by a command in 'commands'")
-        elif db(db.commands.parser_path.contains(db_rec.id)).count() == 0:
+                            "as an 'output_parsers' by a command in 'commands'")
+        elif db(db.commands.output_parsers.contains(db_rec.id)).count() == 0:
             db(db.devices.id == db_rec.id).delete()
             db.commit()
             logging.warning(f"Record id={db_rec.id} deleted from table 'output_parsers'")
@@ -221,6 +226,8 @@ class DBParser(BCMDb):
             self.parser_path =  json_data['parser_path']
         if 'main_keys' in json_data.keys() and json_data['main_keys']:
             self.main_keys =  json_data['main_keys']
+        if 'ignore_keys' in json_data.keys() and json_data['ignore_keys']:
+            self.ignore_keys =  json_data['ignore_keys']
         if 'name' in json_data.keys() and json_data['name']:
             self.name =  json_data['name']
         if 'created_at' in json_data.keys() and json_data['created_at']:
@@ -237,5 +244,5 @@ class DBParser(BCMDb):
         """
         return dict(id=self.db_id, vendor=self.vendor, command=self.command,
             device_os=self.device_os, is_json=self.is_json, parser_path=self.parser_path,
-            main_keys=self.main_keys, name=self.name, created_at=self.created_at,
-            modified_on=self.modified_on)
+            main_keys=self.main_keys, ingore_keys=self.ignore_keys, name=self.name,
+            created_at=self.created_at, modified_on=self.modified_on)
