@@ -94,7 +94,6 @@ db.define_table(
 db.define_table(
     'jobs',
     Field('name', 'string', length=128, notnull=True, unique=True),
-    Field('devices', 'list:reference devices', notnull=True),
     Field('results', 'list:reference results', notnull=True),
     Field('started_at', 'datetime', notnull=True),
     Field('completed_at', 'datetime'),

@@ -128,9 +128,9 @@ class DBResult(BCMDb):
         :return: class attributes as dict
         """
         return dict(id=self.db_id, device=self.device, command=self.command,
-                completed_at=self.completed_at.strftime("%Y-%m-%d %H:%M:%S"),
-                status=self.status, job=self.job, result=self.result,
-                last_result=self.last_result, comment=self.comment)
+            completed_at=self.completed_at.strftime("%Y-%m-%d %H:%M:%S"),
+            status=self.status, job=self.job, result=self.result,
+            last_result=self.last_result, comment=self.comment)
 
 
 class DBResults():

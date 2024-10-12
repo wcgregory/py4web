@@ -20,7 +20,6 @@ class DBJob(BCMDb):
         super(DBJob, self).__init__(db_id=db_id)
         #self._dbtable = 'jobs' -> db.tables == 'jobs'
         self.name = None
-        self.devices = list()
         self.results = list()
         self.started_at = None
         self.completed_at = None
@@ -49,7 +48,6 @@ class DBJob(BCMDb):
         if not db_rec:
             raise TypeError(self.__class__.__name__, f"Expecting record received {type(db_rec)}")
         self.name = db_rec.name
-        self.devices = db_rec.devices
         self.results = db_rec.results
         self.started_at = db_rec.started_at
         self.completed_at = db_rec.completed_at
@@ -70,10 +68,9 @@ class DBJob(BCMDb):
             logging.warning(f"Duplicate 'name' exists in 'jobs' table for name={self.name}")
             return False
         elif db(query).count() == 0:
-            db.jobs.insert(name=self.name, devices=self.devices,
-                results=self.results, started_at=self.started_at,
-                completed_at=self.completed_at, status=self.status,
-                comment=self.comment)
+            db.jobs.insert(name=self.name, results=self.results,
+                started_at=self.started_at, completed_at=self.completed_at,
+                status=self.status, comment=self.comment)
             db.commit()
             db_rec = db(query).select().first()
             if db_rec:
@@ -93,8 +90,6 @@ class DBJob(BCMDb):
         """
         if 'name' in json_data.keys() and json_data['name']:
             self.name =  json_data['name'].strip()
-        if 'devices' in json_data.keys() and json_data['devices']:
-            self.devices = json_data['devices']
         if 'results' in json_data.keys() and json_data['command']:
             self.command = json_data['command']
         if 'started_at' in json_data.keys() and json_data['started_at']:
@@ -113,10 +108,10 @@ class DBJob(BCMDb):
         ---
         :return: class attributes as dict
         """
-        return dict(id=self.db_id, name=self.name, devices=self.devices,
-                results=self.results, started_at=self.started_at.strftime("%Y-%m-%d %H:%M:%S"),
-                completed_at=self.completed_at.strftime("%Y-%m-%d %H:%M:%S"),
-                status=self.status, rcomment=self.comment)
+        return dict(id=self.db_id, name=self.name, results=self.results,
+            started_at=self.started_at.strftime("%Y-%m-%d %H:%M:%S"),
+            completed_at=self.completed_at.strftime("%Y-%m-%d %H:%M:%S"),
+            status=self.status, rcomment=self.comment)
 
 
 class DBJobs():
