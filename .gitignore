@@ -2,6 +2,7 @@
 __pycache__
 apps/*
 databases/
+archive
 .db
 .sqlite
 !apps/wcg
@@ -12,3 +13,4 @@ apps/bcm/_scaffold
 apps/nav/_scaffold
 password.txt
 .service/
+bulma/

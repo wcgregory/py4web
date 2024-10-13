@@ -1,11 +1,11 @@
 # coding: utf-8
 
 import logging
-from datetime import datetime
+#from datetime import datetime
 import json
 
-from ..models import db
-from .bcm_db import BCMDb
+#from ..models import db
+#from .bcm_db import BCMDb
 from .devices import DBDevice
 from .commands import DBCommand
 from .results import DBResult
@@ -16,13 +16,14 @@ class NetworkPoller():
     """
     Abstraction class for uniform interaction with network devices
     """
-    def __init__(self, device_id=None):
+    def __init__(self, device_id, job_id):
         self.device = DBDevice(db_id=device_id)
+        self.job = job_id
         self.commands = None
         self.response = dict()
         self.results = None
     
-    def run_device_commands(self, auth=None, commands=None):
+    def run_device_commands(self, auth=None):
         d = NetConnect(host=self.device.mgmt_ip, vendor=self.device.vendor)
         d.set_username(username=auth[0])
         d.set_password(password=auth[1])
@@ -38,7 +39,7 @@ class NetworkPoller():
             for cmd_id in self.commands.keys():
                 cmd_ref = f"{self.device.db_id}:{cmd_id}"
                 self.response.update({cmd_ref: {
-                    "device": self.device.db_id, "command": cmd_id
+                    "device": self.device.db_id, "command": cmd_id, "job": self.job
                 }})
                 if self.device.os == 'ios':
                     res = d.send_op_command(self.commands[cmd_id], use_textfsm=True)
@@ -80,7 +81,9 @@ class NetworkPoller():
         """
         """
         if self.response:
+            self.results = list()
             for result in self.response.keys():
                 r = DBResult()
                 r.from_json(json_data=self.response[result])
                 r.save()
+                self.results.append(r.db_id)

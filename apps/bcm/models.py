@@ -15,7 +15,7 @@ DEVICE_ROLES = ('CORE', 'GWAN', 'INTERNET', 'EXTRANET', 'OTHER')
 REGIONS = ('APAC', 'SWIS', 'EMEA', 'AMER')
 SITE_CODES = ('HACL', 'LO2X', 'LD2B', 'LODT')
 
-COMMAND_STATUSES = ('Success', 'Pending', 'Running', 'Failed')
+COMMAND_STATUSES = ('Success', 'Pending', 'Running', 'Failed', 'Completed')
 
 # Set development to True to repopulate DB
 DEVELOPMENT = True
@@ -54,6 +54,7 @@ db.define_table(
     Field('is_json', 'boolean'),
     Field('parser_path', 'list:string', notnull=True),
     Field('main_keys', 'list:string'),
+    Field('ignore_keys', 'list:string'),
     Field('name', 'string'),
     Field('created_at', 'datetime', notnull=True),
     Field('modified_on', 'datetime'),
@@ -78,11 +79,24 @@ db.define_table(
 )
 
 db.define_table(
+    'jobs',
+    Field('name', 'string', length=128, notnull=True, unique=True),
+    Field('devices', 'list:reference devices'),
+    Field('results', 'list:reference results'),
+    Field('started_at', 'datetime'),
+    Field('completed_at', 'datetime'),
+    Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),
+    Field('comment', 'string'),
+    format='%(name)s %(comment)s'
+)
+
+db.define_table(
     'results',
     Field('device', 'reference devices', notnull=True),
     Field('command', 'reference commands', notnull=True),
     Field('completed_at', 'datetime', notnull=True),
     Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES), notnull=True),
+    Field('job', 'reference jobs', notnull=True),
     Field('result', 'text'),
     Field('last_result', 'reference results'),
     Field('comment', 'string'),

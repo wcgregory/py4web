@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAA=="/>
     <link rel="stylesheet" href="css/no.css">
+    <link rel="stylesheet" href="css/bulma.min.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/devices.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
     <style>.py4web-validation-error{margin-top:-16px; font-size:0.8em;color:red}</style>
     [[block page_head]]<!-- individual pages can customize header here -->[[end]]
@@ -12,23 +15,33 @@
   <body>
     <header>
       <!-- Navigation bar -->
-      <nav class="black">
+      <nav class="black" class="tabs is-toggle">
         <!-- Logo -->
-        <a href="[[=URL('index')]]">
-          <!-- <b>py4web <script>document.write(window.location.href.split('/')[3]);</script></b> -->
-          <b><script>document.write(window.location.href.split('/')[3].toUpperCase());</script></b>
-        </a>
-        <a href="[[=URL('devices')]]">
-          <b>[[=URL('devices').split("/")[-1].capitalize()]]</b>
-        </a>
-        <a href="[[=URL('results')]]">
-          <b>[[=URL('results').split("/")[-1].capitalize()]]</b>
-        </a>
+
         <!-- Do not touch this -->
         <label for="hamburger">☰</label>
         <input type="checkbox" id="hamburger">
         <!-- Left menu ul/li -->
-        [[block page_left_menu]][[end]]
+        [[block page_left_menu]]
+          <ul>
+            <li class="is-active">
+              <a href="[[=URL('index')]]">
+                <b>[[=URL('index').split("/")[-2].upper()]]</b>
+              </a>
+            </li>
+            <li>
+              <a href="[[=URL('devices')]]">
+                <b>[[=URL('devices').split("/")[-1].capitalize()]]</b>
+              </a>
+            </li>
+            <li>
+              <a href="[[=URL('results')]]">
+                <b>[[=URL('results').split("/")[-1].capitalize()]]</b>
+              </a>
+            </li>
+          </ul>
+        </div>
+        [[end]]
         <!-- Right menu ul/li -->
         <ul>
           [[if globals().get('user'):]]

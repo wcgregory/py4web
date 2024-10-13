@@ -23,6 +23,7 @@ class DBResult(BCMDb):
         self.command = None
         self.completed_at = None
         self.status = None
+        self.job = None
         self.result = None
         self.last_result = None
         self.comment = None
@@ -52,6 +53,7 @@ class DBResult(BCMDb):
         self.command = db_rec.command
         self.completed_at = db_rec.completed_at
         self.status = db_rec.status
+        self.job = db_rec.job
         self.result = db_rec.result
         self.last_result = db_rec.last_result
         self.comment = db_rec.comment
@@ -77,8 +79,8 @@ class DBResult(BCMDb):
         if db(query).count() == 0:
             db.results.insert(device=self.device, command=self.command,
                 completed_at=self.completed_at, status=self.status,
-                result=self.result, last_result=self.last_result,
-                comment=self.comment)
+                job=self.job, result=self.result,
+                last_result=self.last_result, comment=self.comment)
             db.commit()
             db_rec = db(query).select().first()
             if db_rec:
@@ -98,7 +100,7 @@ class DBResult(BCMDb):
 
     def from_json(self, json_data):
         """
-        Method to load a device object from a json data set.
+        Method to load a results object from a json data set.
         Must not set the DB id (db_id), if successful set self.json_import to True
         """
         if 'device' in json_data.keys() and json_data['device']:
@@ -109,6 +111,8 @@ class DBResult(BCMDb):
             self.completed_at = json_data['completed_at'].strip()
         if 'status' in json_data.keys() and json_data['status']:
             self.status = json_data['status'].strip().capitalize()
+        if 'job' in json_data.keys() and json_data['job']:
+            self.job = int(json_data['job'])
         if 'result' in json_data.keys() and json_data['result']:
             self.result = json_data['result']
         if 'last_result' in json_data.keys() and json_data['last_result']:
@@ -124,6 +128,39 @@ class DBResult(BCMDb):
         :return: class attributes as dict
         """
         return dict(id=self.db_id, device=self.device, command=self.command,
-                completed_at=self.completed_at.strftime("%Y-%m-%d %H:%M:%S"),
-                status=self.status, result=self.result,
-                last_result=self.last_result, comment=self.comment)
+            completed_at=self.completed_at, status=self.status, job=self.job,
+            result=self.result, last_result=self.last_result, comment=self.comment)
+
+
+class DBResults():
+    """
+    DB Abstraction class for uniform interaction with lists of 'results'
+    """
+    def __init__(self, db_ids=None):
+        """
+        Standard constructor class
+        """
+        #self._dbtable = 'results' -> db.tables == 'results'
+        self.db_ids = db_ids
+        self.results = list()
+    
+    @staticmethod
+    def get_results(db_ids=None):
+        if not db_ids:
+            results = db(db.results).select()
+        else:
+            if isinstance(db_ids, list):
+                for db_id in db_ids:
+                    idx = 0
+                    while idx < len(db_ids):
+                        if idx == 0:
+                            query = (db.results.id == db_id)
+                        else:
+                            query |= (db.results.id == db_id)
+                        idx += 1
+                results = db(query).select()
+        results_list = []
+        for result in results:
+            r = DBResult(db_id=result.id)
+            results_list.append(r.to_json())
+        return results_list
