@@ -79,6 +79,18 @@ db.define_table(
 )
 
 db.define_table(
+    'jobs',
+    Field('name', 'string', length=128, notnull=True, unique=True),
+    Field('devices', 'list:reference devices'),
+    Field('results', 'list:reference results'),
+    Field('started_at', 'datetime'),
+    Field('completed_at', 'datetime'),
+    Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES)),
+    Field('comment', 'string'),
+    format='%(name)s %(comment)s'
+)
+
+db.define_table(
     'results',
     Field('device', 'reference devices', notnull=True),
     Field('command', 'reference commands', notnull=True),
@@ -89,18 +101,6 @@ db.define_table(
     Field('last_result', 'reference results'),
     Field('comment', 'string'),
     format='%(comment)s'
-)
-
-db.define_table(
-    'jobs',
-    Field('name', 'string', length=128, notnull=True, unique=True),
-    Field('devices', 'list:reference devices', notnull=True),
-    Field('results', 'list:reference results', notnull=True),
-    Field('started_at', 'datetime', notnull=True),
-    Field('completed_at', 'datetime'),
-    Field('status', 'string', requires=IS_IN_SET(COMMAND_STATUSES), notnull=True),
-    Field('comment', 'string'),
-    format='%(name)s %(comment)s'
 )
 
 db.commit()

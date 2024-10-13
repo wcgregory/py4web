@@ -3,6 +3,8 @@
 import logging
 import json
 
+from datetime import datetime
+
 from pydal.objects import Row
 
 from .bcm_db import BCMDb
@@ -13,19 +15,19 @@ class DBJob(BCMDb):
     """
     DB Abstraction class for uniform interaction with DB Table 'jobs'
     """
-    def __init__(self, db_id=None):
+    def __init__(self, db_id=None, name=None, comment=None):
         """
         Standard constructor class
         """
         super(DBJob, self).__init__(db_id=db_id)
         #self._dbtable = 'jobs' -> db.tables == 'jobs'
-        self.name = None
+        self.name = name
         self.devices = list()
         self.results = list()
-        self.started_at = None
+        self.started_at = DBJob.get_timestamp()
         self.completed_at = None
-        self.status = None
-        self.comment = None
+        self.status = "Pending"
+        self.comment = comment
         if self.db_id:
             self.load_by_id()
     
@@ -57,12 +59,22 @@ class DBJob(BCMDb):
         self.comment = db_rec.comment
         self.db_loaded = True
     
+    def set_devices(self, devices):
+        if isinstance(devices, int) and db(db.devices.id == devices).count() == 1:
+            self.devices = list(devices)
+        if isinstance(devices, list):
+            no_id = [device for device in devices if not db(db.devices.id == device).count() == 1]
+            if no_id:
+                raise ValueError(self.__class__.__name__, f"No DB id found for 'devices' {no_id}")
+            else:
+                self.devices = devices
+    
     def save(self):
         """
-        Save a record to DB - creator/updater method
+        Save a job to DB - creator/updater method
         Must set the class db_id to the new DB id
         ---
-        :return True or False: based on whether a new record is created or not
+        :return True or False: based on whether a new job is created or not
         """
         # create query to check whether 'jobs' name already exists
         query = (db.jobs.name == self.name)
@@ -84,7 +96,10 @@ class DBJob(BCMDb):
         logging.warning("Unknown Error, more information/debugging required")
         db.rollback()
         return False
-
+    
+    def run(self):
+        pass
+    
     def from_json(self, json_data):
         """
         Method to load a jobs object from a json data set.
@@ -92,10 +107,8 @@ class DBJob(BCMDb):
         """
         if 'name' in json_data.keys() and json_data['name']:
             self.name =  json_data['name'].strip()
-        if 'devices' in json_data.keys() and json_data['devices']:
-            self.devices = json_data['devices']
-        if 'results' in json_data.keys() and json_data['command']:
-            self.command = json_data['command']
+        self.devices = json_data.get('devices', default=list())
+        self.results = json_data.get('results', default=list())
         if 'started_at' in json_data.keys() and json_data['started_at']:
             self.started_at = json_data['started_at'].strip()
         if 'completed_at' in json_data.keys() and json_data['completed_at']:

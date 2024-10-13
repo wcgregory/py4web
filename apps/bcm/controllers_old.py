@@ -135,8 +135,8 @@ def run_commands_by_role(device_role):
     for device in devices:
         if device['id'] == 3:
             user_creds = (os.getenv('USERACC'), os.getenv('IOSPASS'))
-        if device['id'] == 4:
-            user_creds = (os.getenv('USERACC'), os.getenv('NXOSPASS'))
+        #if device['id'] == 4:
+        #    user_creds = (os.getenv('USERACC'), os.getenv('NXOSPASS'))
         else:
             continue
         device = NetworkPoller(device_id=device['id'])
