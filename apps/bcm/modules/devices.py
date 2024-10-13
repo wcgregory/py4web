@@ -96,6 +96,10 @@ class DBDevice(BCMDb):
                 logging.warning(f"New record created in table 'devices' id={self.db_id}")
                 return True
         elif db(query).count() > 0:
+            """
+            TODO: This should be a modify record action.
+                  We should not be able to update a duplicate entry.
+            """
             db_rec = db(query).select().first()
             self.db_id = db_rec.id
             if not self.is_record_modified(db_rec=db_rec):
@@ -119,9 +123,9 @@ class DBDevice(BCMDb):
         """
         Method to detect changes between class and DB record
         ---
-        :param db_rec: a valid device DB record
+        :param db_rec: a valid devices DB record
         :type db_rec: Row (pydal.objects.Row)
-        :param db_id: a valid device DB id
+        :param db_id: a valid devices DB id
         :type db_id: int
         """
         if db_rec is None:

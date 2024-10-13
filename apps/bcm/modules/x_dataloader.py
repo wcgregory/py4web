@@ -208,27 +208,23 @@ for parser in PARSERS:
     record.save()
 
 """
-device = NetworkPoller(device_id=3)
+device = NetworkPoller(device_id=4, job_id=4)
 device.load_device_commands()
 device.run_device_commands(auth=('admin', 'C1sco12345'))
 device.save_results()
 
-device = NetworkPoller(device_id=4)
+device = NetworkPoller(device_id=5, job_id=5)
 device.load_device_commands()
 device.run_device_commands(auth=('admin', 'Admin_1234!'))
 device.save_results()
 
-    def run(self, credentials=None):
-        #credentials
-        for device in self.devices:
-            j = NetworkPoller(device_id=device, job_id=self.db_id)
-            j.load_device_commands()
-            j.run_device_commands(auth=credentials)
-            j.save_results()
-
-job = DBJob("job_test")
-job.set_devices()
 """
+
+job = DBJob(name="job_test")
+job.set_devices(devices=[4, 5])
+job.save()
+job.run()
+
 
 add_cmdparser = DBCommand(1)
 add_cmdparser.update_output_parsers()

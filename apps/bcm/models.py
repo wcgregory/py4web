@@ -15,7 +15,7 @@ DEVICE_ROLES = ('CORE', 'GWAN', 'INTERNET', 'EXTRANET', 'OTHER')
 REGIONS = ('APAC', 'SWIS', 'EMEA', 'AMER')
 SITE_CODES = ('HACL', 'LO2X', 'LD2B', 'LODT')
 
-COMMAND_STATUSES = ('Success', 'Pending', 'Running', 'Failed')
+COMMAND_STATUSES = ('Success', 'Pending', 'Running', 'Failed', 'Completed')
 
 # Set development to True to repopulate DB
 DEVELOPMENT = True

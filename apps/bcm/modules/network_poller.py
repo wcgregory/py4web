@@ -81,7 +81,9 @@ class NetworkPoller():
         """
         """
         if self.response:
+            self.results = list()
             for result in self.response.keys():
                 r = DBResult()
                 r.from_json(json_data=self.response[result])
                 r.save()
+                self.results.append(r.db_id)
